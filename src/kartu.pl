@@ -85,7 +85,7 @@ efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Skip!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru), % Tambahkan baris ini
+    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
     retract(giliran(_)),
     asserta(giliran(AntreanBaru)).
 
@@ -137,7 +137,6 @@ valid_lempar_wild_draw_four(NamaPemain) :-
     
     \+ member(kartu(WarnaAktifMeja, _), ListKartuTangan),
     \+ member(kartu(WarnaMeja, _), ListKartuTangan),
-    % Memastikan TIDAK ADA kartu jenis/angka yang cocok di tangan
     \+ member(kartu(_, JenisMeja), ListKartuTangan).
 
 efek_kartu(wildDrawFour) :-
