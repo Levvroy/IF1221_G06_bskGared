@@ -1,6 +1,6 @@
 # IF1221_G06_bskGared
 
-Tugas Besar Praktikum IF1221 Logika Komputasional — Kelompok 06
+Tugas Besar Praktikum IF1221 Logika Komputasional - Kelompok 06
 
 Implementasi permainan **UNI** (versi UNO) menggunakan bahasa pemrograman **Prolog (GNU Prolog)**.
 
@@ -80,26 +80,26 @@ IF1221_G06_bskGared
 ## Fitur Utama
 
 ### Setup Permainan
-- `startGame` — memulai permainan baru, meminta jumlah pemain (2–4) dan nama masing-masing pemain, mengacak urutan giliran, membagikan 7 kartu acak ke tiap pemain, dan menginisiasi discard pile dengan kartu angka acak
+- `startGame` - memulai permainan baru, meminta jumlah pemain (2–4) dan nama masing-masing pemain, mengacak urutan giliran, membagikan 7 kartu acak ke tiap pemain, dan menginisiasi discard pile dengan kartu angka acak
 
 ### Aksi Utama (1 per giliran)
-- `mainkanKartu(N)` — mainkan kartu ke-N dari tangan pemain yang sedang giliran. Kartu harus valid (cocok warna atau jenis dengan discard top, atau kartu hitam)
-- `ambilKartu` — ambil 1 kartu dari deck, lalu giliran otomatis berpindah
-- `tantang` — tantang pemain sebelumnya yang memainkan Wild Draw Four. Kalau tantangan berhasil (pemain itu sebenarnya punya kartu valid), pemain itu yang kena hukuman 4 kartu. Kalau gagal, penantang kena 6 kartu
-- `uni(N)` — wajib dipakai saat ingin memainkan kartu ke-N yang akan membuat tangan tersisa 1 kartu. Kalau lupa serukan UNI, bisa ditangkap pemain lain
+- `mainkanKartu(N)` - mainkan kartu ke-N dari tangan pemain yang sedang giliran. Kartu harus valid (cocok warna atau jenis dengan discard top, atau kartu hitam)
+- `ambilKartu` - ambil 1 kartu dari deck, lalu giliran otomatis berpindah
+- `tantang` - tantang pemain sebelumnya yang memainkan Wild Draw Four. Kalau tantangan berhasil (pemain itu sebenarnya punya kartu valid), pemain itu yang kena hukuman 4 kartu. Kalau gagal, penantang kena 6 kartu
+- `uni(N)` - wajib dipakai saat ingin memainkan kartu ke-N yang akan membuat tangan tersisa 1 kartu. Kalau lupa serukan UNI, bisa ditangkap pemain lain
 
 ### Aksi Pendukung (bebas berapa kali)
-- `tangkap(NamaPemain)` — tangkap pemain yang sudah punya 1 kartu tapi belum serukan UNI. Nama pemain harus diawali huruf kapital, contoh: `tangkap('William')`
-- `lihatCommand` — tampilkan daftar aksi yang tersedia pada giliran saat ini
-- `lihatKartu` — tampilkan semua kartu di tangan beserta nomor urutnya
-- `cekInfo` — tampilkan kartu discard top, urutan pemain, dan jumlah kartu tiap pemain
+- `tangkap(NamaPemain)` - tangkap pemain yang sudah punya 1 kartu tapi belum serukan UNI. Nama pemain harus diawali huruf kapital, contoh: `tangkap('William')`
+- `lihatCommand` - tampilkan daftar aksi yang tersedia pada giliran saat ini
+- `lihatKartu` - tampilkan semua kartu di tangan beserta nomor urutnya
+- `cekInfo` - tampilkan kartu discard top, urutan pemain, dan jumlah kartu tiap pemain
 
 ### Kartu Aksi
-- **Skip** — pemain berikutnya kehilangan giliran
-- **Reverse** — arah giliran dibalik
-- **Draw Two** — pemain berikutnya ambil 2 kartu dan kehilangan giliran
-- **Wild** — pemain bebas ganti warna aktif
-- **Wild Draw Four** — pemain berikutnya ambil 4 kartu dan kehilangan giliran, plus pemain aktif pilih warna baru. Hanya boleh dimainkan kalau tidak punya kartu valid lain (bisa ditantang)
+- **Skip** - pemain berikutnya kehilangan giliran
+- **Reverse** - arah giliran dibalik
+- **Draw Two** - pemain berikutnya ambil 2 kartu dan kehilangan giliran
+- **Wild** - pemain bebas ganti warna aktif
+- **Wild Draw Four** - pemain berikutnya ambil 4 kartu dan kehilangan giliran, plus pemain aktif pilih warna baru. Hanya boleh dimainkan kalau tidak punya kartu valid lain (bisa ditantang)
 
 ### End Game
 - Permainan otomatis berakhir saat ada pemain yang kartunya habis
@@ -110,8 +110,8 @@ IF1221_G06_bskGared
 - Pemain dengan poin paling kecil menang
 
 ### Save dan Load Game
-- `saveGame` — simpan kondisi permainan ke file `.txt`
-- `loadGame` — muat kembali permainan dari file `.txt` yang sudah disimpan
+- `saveGame` - simpan kondisi permainan ke file `.txt`
+- `loadGame` - muat kembali permainan dari file `.txt` yang sudah disimpan
 
 ---
 
