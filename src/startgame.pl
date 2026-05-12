@@ -70,3 +70,10 @@ init_discard_pile :-
         assertz(warnaActive(W)),
         write('Kartu discard top: '), write(W), write('-'), write(J), write('.'), nl, nl
     ).
+    
+is_action_card(skip).
+is_action_card(reverse).
+is_action_card(drawTwo).
+is_action_card(wild).
+is_action_card(wildDrawFour).
+is_action_card(mimic).
