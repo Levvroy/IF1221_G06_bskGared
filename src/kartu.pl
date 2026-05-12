@@ -1,8 +1,7 @@
-:- dynamic giliran/1.          % Menyimpan urutan list pemain
-:- dynamic kartudiTangan/2.    % Menyimpan list kartu pemain
-:- dynamic kartuTeratas/2.     % Menyimpan kartu di atas discard pile
-:- dynamic warnaActive/1.       % Menyimpan warna permainan saat ini
-
+:- dynamic(giliran/1).
+:- dynamic(kartudiTangan/2).
+:- dynamic(kartuTeratas/2).
+:- dynamic(warnaActive/1).
 
 /*DEKLARASI FAKTA*/
 /*Kartu Angka*/ 
@@ -83,7 +82,6 @@ valid_lempar(Warna, Jenis) :-
 
 /*EFEK KARTU SKIP*/
 efek_kartu(skip) :-
-    efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Skip!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
