@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # IF1221_G06_bskGared
 
 Tugas Besar Praktikum IF1221 Logika Komputasional - Kelompok 06
