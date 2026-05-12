@@ -1,7 +1,7 @@
 get_jumlah_pemain(N) :-
     write('Masukkan jumlah pemain: '),
     read(Input),
-    (   Input >= 2, Input =< 4
+    (   integer(Input), Input >= 2, Input =< 4
     ->  N = Input
     ;   write('Mohon masukkan angka antara 2 - 4.'), nl,
         get_jumlah_pemain(N)
@@ -10,9 +10,8 @@ get_jumlah_pemain(N) :-
 get_nama_pemain(N, ListPemain) :-
     get_nama_pemain_loop(1, N, [], ListPemain).
 
-get_nama_pemain_loop(Current, Total, _, Acc) :-
-    Current > Total, 
-    Acc = Acc, !.
+get_nama_pemain_loop(Current, Total, Acc, Acc) :-
+    Current > Total, !.
 
 get_nama_pemain_loop(Current, Total, Acc, ListPemain) :-
     Current =< Total,
