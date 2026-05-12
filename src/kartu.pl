@@ -1,7 +1,7 @@
 :- dynamic giliran/1.          % Menyimpan urutan list pemain
 :- dynamic kartudiTangan/2.    % Menyimpan list kartu pemain
 :- dynamic kartuTeratas/2.     % Menyimpan kartu di atas discard pile
-:- dynamic warnaAktif/1.       % Menyimpan warna permainan saat ini
+:- dynamic warnaActive/1.       % Menyimpan warna permainan saat ini
 
 
 /*DEKLARASI FAKTA*/
@@ -77,16 +77,17 @@ kartu(hitam, wildDrawFour).
 /*ATURAN*/
 /*Validasi untuk Kartu Angka dan Reverse*/
 valid_lempar(Warna, Jenis) :-
-    warnaAktif(WarnaSekarang),
+    warnaActive(WarnaSekarang),
     kartuTeratas(_, JenisTeratas),
     (Warna = WarnaSekarang ; Jenis = JenisTeratas), !.
 
 /*EFEK KARTU SKIP*/
 efek_kartu(skip) :-
+    efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Skip!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
+    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru), % Tambahkan baris ini
     retract(giliran(_)),
     asserta(giliran(AntreanBaru)).
 
@@ -123,8 +124,8 @@ efek_kartu(wild) :-
     write('Pilih warna aktif baru (merah/kuning/hijau/biru): '),
     read(WarnaBaru),
     ( member(WarnaBaru, [merah, kuning, hijau, biru]) ->
-        retract(warnaAktif(_)),
-        asserta(warnaAktif(WarnaBaru)),
+        retract(warnaActive(_)),
+        asserta(warnaActive(WarnaBaru)),
         write('-> Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl ;
         write('-> Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
         efek_kartu(wild)
@@ -133,7 +134,7 @@ efek_kartu(wild) :-
 /*KARTU WILD DRAW FOUR*/
 valid_lempar_wild_draw_four(NamaPemain) :-
     kartuTeratas(WarnaMeja, JenisMeja),
-    warnaAktif(WarnaAktifMeja), 
+    warnaActive(WarnaAktifMeja), 
     kartudiTangan(NamaPemain, ListKartuTangan),
     
     \+ member(kartu(WarnaAktifMeja, _), ListKartuTangan),
@@ -147,8 +148,8 @@ efek_kartu(wildDrawFour) :-
     write('Masukkan warna aktif baru (merah/kuning/hijau/biru) diakhiri titik: '),
     read(WarnaBaru),
     ( member(WarnaBaru, [merah, kuning, hijau, biru]) ->
-        retract(warnaAktif(_)),
-        asserta(warnaAktif(WarnaBaru)),
+        retract(warnaActive(_)),
+        asserta(warnaActive(WarnaBaru)),
         write('-> Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
         
         write('-> Pemain '), write(PemainBerikutnya), write(' mengambil 4 kartu dan kehilangan gilirannya.'), nl,
