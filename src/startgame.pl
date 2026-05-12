@@ -6,11 +6,16 @@ startGame :-
     retractall(kartudiTangan(_,_)),
     retractall(kartuTeratas(_,_)),
     retractall(warnaActive(_)),
+    retractall(sudahMainKartu(_)),
+    retractall(statusUni(_)),
+    retractall(penantangWDF(_)),
+    assertz(sudahMainKartu(false)),
+    assertz(statusUni([])),
     get_jumlah_pemain(N),
     get_nama_pemain(N, ListPemainRaw),
     nl,
     acak_list(ListPemainRaw, ListPemain),
-    asserta(giliran(ListPemain)),
+    assertz(giliran(ListPemain)),
     write('Urutan pemain: '), cetak_urutan(ListPemain), write('.'), nl, nl,
     bagi_kartu_semua(ListPemain),
     write('Setiap pemain mendapatkan 7 kartu acak.'), nl, nl,
@@ -49,7 +54,7 @@ bagi_kartu_semua([Pemain|T]) :-
     bagi_kartu_semua(T).
 
 bagi_kartu_pemain(0, Pemain, Tangan) :-
-    asserta(kartudiTangan(Pemain, Tangan)), !.
+    assertz(kartudiTangan(Pemain, Tangan)), !.
 bagi_kartu_pemain(N, Pemain, Acc) :-
     N > 0,
     random_kartu(W, J),
@@ -58,16 +63,10 @@ bagi_kartu_pemain(N, Pemain, Acc) :-
 
 init_discard_pile :-
     random_kartu(W, J),
-    (   is_action_card(J)
-    ->  init_discard_pile
-    ;   asserta(kartuTeratas(W, J)),
-        asserta(warnaActive(W)),
+    ( is_action_card(J) ->
+        init_discard_pile
+    ;
+        assertz(kartuTeratas(W, J)),
+        assertz(warnaActive(W)),
         write('Kartu discard top: '), write(W), write('-'), write(J), write('.'), nl, nl
     ).
-
-is_action_card(skip).
-is_action_card(reverse).
-is_action_card(drawTwo).
-is_action_card(wild).
-is_action_card(wildDrawFour).
-is_action_card(mimic).

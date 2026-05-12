@@ -1,7 +1,7 @@
 :- dynamic giliran/1.
 :- dynamic kartudiTangan/2.
 :- dynamic kartuTeratas/2.
-:- dynamic warnaAktif/1.
+:- dynamic warnaAktive/1.
 :- dynamic sudahMainKartu/1. 
 :- dynamic statusUni/1. 
 :- dynamic penantangWDF/1. 
@@ -31,7 +31,7 @@ hapusIndex(N, [H|T], [H|Hasil]) :-
 bisaDimainkan(hitam, _) :- !.
 
 bisaDimainkan(Warna, _) :-
-    warnaAktif(Warna), !.
+    warnaActive(Warna), !.
 
 bisaDimainkan(_, Jenis) :-
     kartuTeratas(_, JenisTeratas),
@@ -48,9 +48,9 @@ mainkanKartu(N) :-
     !,
     (  Jenis = wildDrawFour
     -> (  valid_lempar_wild_draw_four(Pemain)
-       -> true
-       ;  write('[Peringatan] Kamu masih punya kartu yang bisa dimainkan. Tapi boleh aja sih, nanti bisa ditantang.'), nl
-       )
+        -> true
+        ;  write('[Peringatan] Kamu masih punya kartu yang bisa dimainkan. Tapi boleh aja sih, nanti bisa ditantang.'), nl
+        )
     ;  true
     ),
     hapusIndex(N, TanganPemain, TanganBaru),
@@ -66,7 +66,7 @@ mainkanKartu(N) :-
     assertz(statusUni(ListUniBaru)),
     efek_kartu(Jenis),
     (  TanganBaru = []
-    -> endGame
+    -> endGame(Pemain)
     ;  nextTurn
     ).
 
@@ -110,10 +110,10 @@ lihatCommand :-
     nl, write('Aksi utama yang tersedia:'), nl,
     (  Status = false
     -> write('1. mainkanKartu(N)'), nl,
-       write('2. ambilKartu'), nl,
-       write('3. tantang'), nl,
-       write('4. uni(N)'), nl
-    ;  write('(sudah digunakan pada giliran ini)'), nl
+        write('2. ambilKartu'), nl,
+        write('3. tantang'), nl,
+        write('4. uni(N)'), nl
+    ;   write('(sudah digunakan pada giliran ini)'), nl
     ),
     nl, write('Aksi pendukung yang tersedia:'), nl,
     write('1. tangkap(NamaPemain)'), nl,

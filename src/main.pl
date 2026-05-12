@@ -2,5 +2,4 @@
 % ~ lewi
 
 :- consult('startgame.pl').
-
 :- consult('turn.pl').
