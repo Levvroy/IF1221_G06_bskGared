@@ -1,131 +1,73 @@
-:- dynamic giliran/1.
-:- dynamic kartudiTangan/2.
-:- dynamic kartuTeratas/2.
-:- dynamic warnaActive/1.
-:- dynamic sisaDeck/1.
-:- dynamic sudahMainKartu/1.
-:- dynamic statusUni/1.
-:- dynamic penantangWDF/1.
-
 :- include('kartu.pl').
+:- include('pemain.pl').
 
 startGame :-
-    write('Masukkan jumlah pemain: '),
-    read(N),
-    (integer(N), N >= 2, N =< 4 -> 
-        nl, inputNamaPemain(N, [], DaftarNama),
-        inisialisasiGame(DaftarNama) 
-    ; 
-        write('Mohon masukkan angka antara 2 - 4.'), nl, 
-        startGame
+    retractall(giliran(_)),
+    retractall(kartudiTangan(_,_)),
+    retractall(kartuTeratas(_,_)),
+    retractall(warnaActive(_)),
+    get_jumlah_pemain(N),
+    get_nama_pemain(N, ListPemainRaw),
+    nl,
+    acak_list(ListPemainRaw, ListPemain),
+    asserta(giliran(ListPemain)),
+    write('Urutan pemain: '), cetak_urutan(ListPemain), write('.'), nl, nl,
+    bagi_kartu_semua(ListPemain),
+    write('Setiap pemain mendapatkan 7 kartu acak.'), nl, nl,
+    init_discard_pile,
+    ListPemain = [PemainPertama|_],
+    write('Giliran '), write(PemainPertama), write('.'), nl.
+
+cetak_urutan([H]) :- write(H), !.
+cetak_urutan([H|T]) :- write(H), write(' - '), cetak_urutan(T).
+
+panjang_list([], 0).
+panjang_list([_|T], N) :- panjang_list(T, N1), N is N1 + 1.
+
+ambil_elemen_ke(0, [H|T], H, T).
+ambil_elemen_ke(N, [H|T], X, [H|Sisa]) :-
+    N > 0,
+    N1 is N - 1,
+    ambil_elemen_ke(N1, T, X, Sisa).
+
+acak_list([], []).
+acak_list(List, [X|ListAcak]) :-
+    panjang_list(List, Len),
+    Index is random(Len),
+    ambil_elemen_ke(Index, List, X, SisaList),
+    acak_list(SisaList, ListAcak).
+
+random_kartu(Warna, Jenis) :-
+    findall(kartu(W, J), kartu(W, J), SemuaKartu),
+    panjang_list(SemuaKartu, Len),
+    Index is random(Len),
+    ambil_elemen_ke(Index, SemuaKartu, kartu(Warna, Jenis), _).
+
+bagi_kartu_semua([]).
+bagi_kartu_semua([Pemain|T]) :-
+    bagi_kartu_pemain(7, Pemain, []),
+    bagi_kartu_semua(T).
+
+bagi_kartu_pemain(0, Pemain, Tangan) :-
+    asserta(kartudiTangan(Pemain, Tangan)), !.
+bagi_kartu_pemain(N, Pemain, Acc) :-
+    N > 0,
+    random_kartu(W, J),
+    NextN is N - 1,
+    bagi_kartu_pemain(NextN, Pemain, [kartu(W,J)|Acc]).
+
+init_discard_pile :-
+    random_kartu(W, J),
+    (   is_action_card(J)
+    ->  init_discard_pile
+    ;   asserta(kartuTeratas(W, J)),
+        asserta(warnaActive(W)),
+        write('Kartu discard top: '), write(W), write('-'), write(J), write('.'), nl, nl
     ).
 
-inisialisasiGame(DaftarNama) :-
-    hapusDataLama,
-    acakList(DaftarNama, UrutanBaru),
-    buatDeckBaru(DeckLengkap),
-    bagiKartuPemain(UrutanBaru, DeckLengkap, DeckSisa),
-    setKartuAwal(DeckSisa, kartu(WarnaAwal, AngkaAwal), DeckFinal),
-    
-    assertz(giliran(UrutanBaru)),
-    assertz(kartuTeratas(WarnaAwal, AngkaAwal)),
-    assertz(warnaActive(WarnaAwal)),
-    assertz(sisaDeck(DeckFinal)),
-    assertz(sudahMainKartu(false)),
-    assertz(statusUni([])),
-    assertz(penantangWDF(none)),
-    
-    nl,
-    write('Urutan pemain: '),
-    tampilkanUrutan(UrutanBaru),
-    write('.'), nl, nl,
-    write('Setiap pemain mendapatkan 7 kartu acak.'), nl, nl,
-    write('Kartu discard top: '),
-    write(WarnaAwal), write('-'), write(AngkaAwal),
-    nl, nl,
-    UrutanBaru = [Pertama|_],
-    write('Giliran '), write(Pertama), write('.'), nl,
-    !.
-
-hapusDataLama :-
-    retractall(giliran(_)),
-    retractall(kartudiTangan(_, _)),
-    retractall(kartuTeratas(_, _)),
-    retractall(warnaActive(_)),
-    retractall(sisaDeck(_)),
-    retractall(sudahMainKartu(_)),
-    retractall(statusUni(_)),
-    retractall(penantangWDF(_)).
-
-inputNamaPemain(N, Acc, Result) :-
-    bacaNamaPemain(1, N, Acc, Result).
-
-bacaNamaPemain(Index, Total, Acc, Result) :-
-    Index > Total, !, reverseList(Acc, Result).
-
-bacaNamaPemain(Index, Total, Acc, Result) :-
-    write('Masukkan nama pemain '), write(Index), write(': '), read(Nama),
-    cekNamaUnik(Nama, Acc, NamaValid),
-    NextIndex is Index + 1,
-    bacaNamaPemain(NextIndex, Total, [NamaValid|Acc], Result).
-
-cekNamaUnik(Nama, Acc, Nama) :-
-    \+ cekMember(Nama, Acc), !.
-
-cekNamaUnik(_, Acc, NamaValid) :-
-    write('Nama sudah digunakan. Masukkan nama lain: '), read(NamaBaru),
-    cekNamaUnik(NamaBaru, Acc, NamaValid).
-
-tampilkanUrutan([P]) :- write(P), !.
-tampilkanUrutan([P|T]) :- write(P), write(' - '), tampilkanUrutan(T).
-
-bagiKartuPemain([], Deck, Deck).
-bagiKartuPemain([Pemain|SisaPemain], DeckAwal, SisaDeckAkhir) :-
-    ambilNKartu(7, DeckAwal, TanganPemain, DeckSisa),
-    assertz(kartudiTangan(Pemain, TanganPemain)),
-    bagiKartuPemain(SisaPemain, DeckSisa, SisaDeckAkhir).
-
-ambilNKartu(0, Deck, [], Deck) :- !.
-ambilNKartu(N, [Kartu|SisaDeck], [Kartu|SisaTangan], SisaAkhir) :-
-    N > 0, N1 is N - 1,
-    ambilNKartu(N1, SisaDeck, SisaTangan, SisaAkhir).
-
-setKartuAwal([kartu(Warna, Jenis)|SisaDeck], kartu(Warna, Jenis), SisaDeck) :-
-    integer(Jenis), !.
-
-setKartuAwal([Kartu|SisaDeck], KartuAtas, FinalDeck) :-
-    taruhBelakang(SisaDeck, Kartu, DeckBaru),
-    setKartuAwal(DeckBaru, KartuAtas, FinalDeck).
-
-buatDeckBaru(DeckAcak) :-
-    findall(kartu(Warna, Jenis), kartu(Warna, Jenis), SemuaKartu),
-    acakList(SemuaKartu, DeckAcak).
-
-cekMember(X, [X|_]) :- !.
-cekMember(X, [_|T]) :- cekMember(X, T).
-
-reverseList([], []).
-reverseList([H|T], Reversed) :-
-    reverseList(T, RevT),
-    taruhBelakang(RevT, H, Reversed).
-
-taruhBelakang([], Elemen, [Elemen]).
-taruhBelakang([H|T], Elemen, [H|TBaru]) :-
-    taruhBelakang(T, Elemen, TBaru).
-
-acakList([], []).
-acakList(List, [Elemen|SisaAcak]) :-
-    hitungPanjang(List, Panjang),
-    IndexRandom is random(Panjang),
-    ambilDanHapus(IndexRandom, List, Elemen, SisaList),
-    acakList(SisaList, SisaAcak).
-
-hitungPanjang([], 0).
-hitungPanjang([_|T], N) :-
-    hitungPanjang(T, N1),
-    N is N1 + 1.
-
-ambilDanHapus(0, [H|T], H, T) :- !.
-ambilDanHapus(N, [H|T], Elemen, [H|SisaT]) :-
-    N > 0, N1 is N - 1,
-    ambilDanHapus(N1, T, Elemen, SisaT).
+is_action_card(skip).
+is_action_card(reverse).
+is_action_card(drawTwo).
+is_action_card(wild).
+is_action_card(wildDrawFour).
+is_action_card(mimic).
