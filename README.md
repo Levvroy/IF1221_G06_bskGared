@@ -156,4 +156,3 @@ yes
 
 - GNU Prolog Manual: http://www.gprolog.org/manual/gprolog.html
 - UNO Rules: https://www.unorules.com/
-=======
