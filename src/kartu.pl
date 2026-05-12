@@ -97,7 +97,7 @@ efek_kartu(reverse) :-
     reverse(Lama, Baru),
     retract(giliran(_)),
     asserta(giliran(Baru)),
-    write('-> EFEK AKTIF: Kartu Reverse!'), nl.
+    write('-> EFEK AKTIF: Kartu Reverse!'), nl,
     write('-> Arah permainan dibalikkan!'), nl, !.
 
 /*EFEK KARTU DRAW TWO*/
@@ -120,7 +120,7 @@ valid_lempar(hitam, wild) :-
     JenisTeratas \= wildDrawFour, !.
 
 efek_kartu(wild) :-
-    write('-> EFEK AKTIF: Kartu Wild!'), nl.
+    write('-> EFEK AKTIF: Kartu Wild!'), nl,
     write('Pilih warna aktif baru (merah/kuning/hijau/biru): '),
     read(WarnaBaru),
     ( member(WarnaBaru, [merah, kuning, hijau, biru]) ->
