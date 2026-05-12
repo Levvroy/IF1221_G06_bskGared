@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # IF1221_G06_bskGared
 
 Tugas Besar Praktikum IF1221 Logika Komputasional - Kelompok 06
@@ -156,3 +157,6 @@ yes
 
 - GNU Prolog Manual: http://www.gprolog.org/manual/gprolog.html
 - UNO Rules: https://www.unorules.com/
+=======
+tes
+>>>>>>> 0d12d27db59ae8a198b2ab4314a242ee5c11e78a
