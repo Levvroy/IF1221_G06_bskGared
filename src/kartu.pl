@@ -83,11 +83,10 @@ valid_lempar(Warna, Jenis) :-
 
 /*EFEK KARTU SKIP*/
 efek_kartu(skip) :-
-    efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Skip!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru), % Tambahkan baris ini
+    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
     retract(giliran(_)),
     asserta(giliran(AntreanBaru)).
 
