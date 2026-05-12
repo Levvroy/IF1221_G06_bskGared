@@ -16,7 +16,7 @@ startGame :-
     write('Setiap pemain mendapatkan 7 kartu acak.'), nl, nl,
     init_discard_pile,
     ListPemain = [PemainPertama|_],
-    write('Giliran '), write(PemainPertama), write('.'), nl.
+    write('Giliran '), write(PemainPertama), write('.'), nl, !.
 
 cetak_urutan([H]) :- write(H), !.
 cetak_urutan([H|T]) :- write(H), write(' - '), cetak_urutan(T).
@@ -24,7 +24,7 @@ cetak_urutan([H|T]) :- write(H), write(' - '), cetak_urutan(T).
 panjang_list([], 0).
 panjang_list([_|T], N) :- panjang_list(T, N1), N is N1 + 1.
 
-ambil_elemen_ke(0, [H|T], H, T).
+ambil_elemen_ke(0, [H|T], H, T) :- !.
 ambil_elemen_ke(N, [H|T], X, [H|Sisa]) :-
     N > 0,
     N1 is N - 1,
@@ -33,14 +33,14 @@ ambil_elemen_ke(N, [H|T], X, [H|Sisa]) :-
 acak_list([], []).
 acak_list(List, [X|ListAcak]) :-
     panjang_list(List, Len),
-    Index is random(Len),
+    random(0, Len, Index),
     ambil_elemen_ke(Index, List, X, SisaList),
     acak_list(SisaList, ListAcak).
 
 random_kartu(Warna, Jenis) :-
     findall(kartu(W, J), kartu(W, J), SemuaKartu),
     panjang_list(SemuaKartu, Len),
-    Index is random(Len),
+    random(0, Len, Index),
     ambil_elemen_ke(Index, SemuaKartu, kartu(Warna, Jenis), _).
 
 bagi_kartu_semua([]).
