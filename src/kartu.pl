@@ -80,6 +80,14 @@ valid_lempar(Warna, Jenis) :-
     kartuTeratas(_, JenisTeratas),
     (Warna = WarnaSekarang ; Jenis = JenisTeratas), !.
 
+/*Reverse Manual*/
+reverse_list(List, Reversed) :-
+    reverse_helper(List, [], Reversed).
+
+reverse_helper([], Acc, Acc).
+reverse_helper([Head|Tail], Acc, Reversed) :-
+    reverse_helper(Tail, [Head|Acc], Reversed).
+
 /*EFEK KARTU SKIP*/
 efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
@@ -92,7 +100,7 @@ efek_kartu(skip) :-
 /*EFEK KARTU REVERSE*/
 efek_kartu(reverse) :-
     giliran(Lama),
-    reverse(Lama, Baru),
+    reverse_list(Lama, Baru),
     retract(giliran(_)),
     asserta(giliran(Baru)),
     write('-> EFEK AKTIF: Kartu Reverse!'), nl,
