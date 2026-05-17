@@ -2,6 +2,7 @@
 :- dynamic(kartudiTangan/2).
 :- dynamic(kartuTeratas/2).
 :- dynamic(warnaActive/1).
+:- dynamic(tumpukan_kartu/1).
 
 /*DEKLARASI FAKTA*/
 /*Kartu Angka*/ 
@@ -80,6 +81,11 @@ valid_lempar(Warna, Jenis) :-
     kartuTeratas(_, JenisTeratas),
     (Warna = WarnaSekarang ; Jenis = JenisTeratas), !.
 
+/*Append Manual*/
+append_element([], Element, [Element]).
+append_element([Head|Tail], Element, [Head|NewTail]) :-
+    append_element(Tail, Element, NewTail).
+
 /*Reverse Manual*/
 reverse_list(List, Reversed) :-
     reverse_helper(List, [], Reversed).
@@ -93,9 +99,10 @@ efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Skip!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
+    append_element(SisaPemain, PemainSekarang, AntreanTmp),
+    append_element(AntreanTmp, PemainBerikutnya, AntreanBaru),
     retract(giliran(_)),
-    asserta(giliran(AntreanBaru)).
+    asserta(giliran(AntreanBaru)), !.
 
 /*EFEK KARTU REVERSE*/
 efek_kartu(reverse) :-
@@ -111,12 +118,22 @@ efek_kartu(drawTwo) :-
     giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('-> EFEK AKTIF: Kartu Draw Two!'), nl,
     write('-> Pemain '), write(PemainBerikutnya), write(' harus mengambil 2 kartu dan kehilangan gilirannya.'), nl,
+    tumpukan_kartu([Kartu1, Kartu2 | SisaDeck]),
+    retract(tumpukan_kartu(_)),
+    asserta(tumpukan_kartu(SisaDeck)), 
     
-    % panggil fungsi ambilKartu
-    write('-> (Sistem: Menambahkan 2 kartu ke tangan '), write(PemainBerikutnya), write(')'), nl,
-    append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
+    kartudiTangan(PemainBerikutnya, Tangan),
+    append_element(Tangan, Kartu1, TanganTmp),
+    append_element(TanganTmp, Kartu2, TanganBaru),
+    retract(kartudiTangan(PemainBerikutnya, _)),
+    assertz(kartudiTangan(PemainBerikutnya, TanganBaru)),
+    
+    write('-> (sistem: 2 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
+    
+    append_element(SisaPemain, PemainSekarang, AntreanTmp2),
+    append_element(AntreanTmp2, PemainBerikutnya, AntreanBaru),
     retract(giliran(_)),
-    asserta(giliran(AntreanBaru)).
+    asserta(giliran(AntreanBaru)), !.
 
 /*EFEK KARTU WILD*/
 /*Validasi Kartu Wild*/
@@ -152,18 +169,32 @@ efek_kartu(wildDrawFour) :-
     write('-> EFEK AKTIF: Kartu Wild Draw Four!'), nl,
     write('Masukkan warna aktif baru (merah/kuning/hijau/biru) diakhiri titik: '),
     read(WarnaBaru),
-    ( member(WarnaBaru, [merah, kuning, hijau, biru]) ->
+    
+    ( (WarnaBaru = merah ; WarnaBaru = kuning ; WarnaBaru = hijau ; WarnaBaru = biru) ->
         retract(warnaActive(_)),
         asserta(warnaActive(WarnaBaru)),
         write('-> Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
-        
         write('-> Pemain '), write(PemainBerikutnya), write(' mengambil 4 kartu dan kehilangan gilirannya.'), nl,
         
-        % panggil fungsi ambilKartu
-        write('-> (Sistem: Menambahkan 4 kartu ke tangan '), write(PemainBerikutnya), write(')'), nl,
-        append(SisaPemain, [PemainSekarang, PemainBerikutnya], AntreanBaru),
+        tumpukan_kartu([Kartu1, Kartu2, Kartu3, Kartu4 | SisaDeck]),
+        retract(tumpukan_kartu(_)),
+        asserta(tumpukan_kartu(SisaDeck)),
+
+        kartudiTangan(PemainBerikutnya, Tangan),
+        append_element(Tangan, Kartu1, T1),
+        append_element(T1, Kartu2, T2),
+        append_element(T2, Kartu3, T3),
+        append_element(T3, Kartu4, TanganBaru),
+        retract(kartudiTangan(PemainBerikutnya, _)),
+        assertz(kartudiTangan(PemainBerikutnya, TanganBaru)),
+        
+        write('-> (sistem: 4 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
+
+        append_element(SisaPemain, PemainSekarang, AntreanTmp),
+        append_element(AntreanTmp, PemainBerikutnya, AntreanBaru),
         retract(giliran(_)),
         asserta(giliran(AntreanBaru))
-    ;
-        write('-> GAGAL: Warna tidak valid. Harap jalankan ulang efek.'), nl
-    ).
+    ;   
+        write('-> Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
+        efek_kartu(wildDrawFour)
+    ), !.
