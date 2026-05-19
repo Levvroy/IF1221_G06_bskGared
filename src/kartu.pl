@@ -61,12 +61,12 @@ reverse_helper([Head|Tail], Acc, Reversed) :-
 efek_kartu(Jenis) :- integer(Jenis), !.
 
 efek_kartu(skip) :-
-    giliran([PemainSekarang, PemainBerikutnya|SisaPemain]),
+    giliran([PemainSekarang, PemainBerikutnya | SisaPemain]),
     write('EFEK AKTIF: Kartu Skip!'), nl,
     write('Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append_element(SisaPemain, PemainBerikutnya, AntreanBaru),
+    append_element(SisaPemain, PemainSekarang, AntreanTmp),
     retract(giliran(_)),
-    assertz(giliran([PemainSekarang | AntreanBaru])), !.
+    assertz(giliran([PemainBerikutnya | AntreanTmp])), !.
 
 efek_kartu(reverse) :-
     giliran([PemainSekarang|SisaPemain]),
