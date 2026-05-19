@@ -10,10 +10,10 @@ main :-
     write('\n  Ketik "startGame." untuk memulai permainan. \n  >> '),
     read(Command),
     (
-        Command = 'startGame.' ->
+        Command = startGame ->
         startGame
         ;
-        Command = 'exit' ->
+        Command = exit ->
         fail
         ;
         main
