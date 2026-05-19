@@ -1,4 +1,4 @@
-:- dynamic (kartudiTangan/2).
+:- dynamic(kartudiTangan/2).
 
 nilaiKartu(Jenis, Nilai) :-
     integer(Jenis), !, Nilai = Jenis.
