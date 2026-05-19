@@ -3,3 +3,5 @@
 
 :- consult('startgame.pl').
 :- consult('turn.pl').
+:- consult('poin.pl').
+:- consult('endGame.pl').
