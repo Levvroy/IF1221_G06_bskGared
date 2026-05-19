@@ -1,9 +1,10 @@
 get_jumlah_pemain(N) :-
     write('Masukkan jumlah pemain: '),
     read(Input),
-    (   integer(Input), Input >= 2, Input =< 4
-    ->  N = Input
-    ;   write('Mohon masukkan angka antara 2 - 4.'), nl,
+    (integer(Input), Input >= 2, Input =< 4 ->
+        N = Input
+    ;
+        write('Mohon masukkan angka antara 2 - 4.'), nl,
         get_jumlah_pemain(N)
     ).
 
@@ -17,20 +18,29 @@ get_nama_pemain_loop(Current, Total, Acc, ListPemain) :-
     Current =< Total,
     write('Masukkan nama pemain '), write(Current), write(': '),
     read(Nama),
-    (   member(Nama, Acc)
-    ->  handle_duplicate(Acc, NamaValid),
+    (cekAdaDiList(Nama, Acc) ->
+        handle_duplicate(Acc, NamaValid),
         Next is Current + 1,
-        append(Acc, [NamaValid], NewAcc),
+        tambahKeList(Acc, NamaValid, NewAcc),
         get_nama_pemain_loop(Next, Total, NewAcc, ListPemain)
-    ;   Next is Current + 1,
-        append(Acc, [Nama], NewAcc),
+    ;
+        Next is Current + 1,
+        tambahKeList(Acc, Nama, NewAcc),
         get_nama_pemain_loop(Next, Total, NewAcc, ListPemain)
     ).
 
 handle_duplicate(Acc, ValidNama) :-
     write('Nama sudah digunakan. Masukkan nama lain: '),
     read(NamaBaru),
-    (   member(NamaBaru, Acc)
-    ->  handle_duplicate(Acc, ValidNama)
-    ;   ValidNama = NamaBaru
+    (cekAdaDiList(NamaBaru, Acc) ->
+        handle_duplicate(Acc, ValidNama)
+    ;
+        ValidNama = NamaBaru
     ).
+
+cekAdaDiList(X, [X|_]) :- !.
+cekAdaDiList(X, [_|T]) :- cekAdaDiList(X, T).
+
+tambahKeList([], X, [X]).
+tambahKeList([H|T], X, [H|Hasil]) :-
+    tambahKeList(T, X, Hasil).

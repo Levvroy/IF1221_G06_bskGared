@@ -4,7 +4,7 @@
 :- dynamic warnaActive/1.
 :- dynamic statusUni/1.
 :- dynamic arahPermainan/1.
-:- dynamic kartuTersembunyi/2. % penambahan dari spesifikasi bonus
+:- dynamic kartuTersembunyi/2.
 
 saveGame :-
     write('Masukkan nama file penyimpanan: '),

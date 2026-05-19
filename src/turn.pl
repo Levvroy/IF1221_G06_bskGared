@@ -34,19 +34,19 @@ hapusDariList(X, [H|T], [H|Hasil]) :-
 cekAnggota(X, [X|_]) :- !.
 cekAnggota(X, [_|T]) :- cekAnggota(X, T).
 
-ambilSatuDariTumpukan(Pemain) :-
-    tumpukan_kartu([Kartu|Sisa]),
+ambilSatuDariTumpukan(Pemain, kartu(W,J)) :-
+    tumpukan_kartu([kartu(W,J)|Sisa]),
     retract(tumpukan_kartu(_)),
     assertz(tumpukan_kartu(Sisa)),
     kartudiTangan(Pemain, Tangan),
-    append_element(Tangan, Kartu, TanganBaru),
+    append_element(Tangan, kartu(W,J), TanganBaru),
     retract(kartudiTangan(Pemain, _)),
     assertz(kartudiTangan(Pemain, TanganBaru)).
 
 ambilNKartuDariTumpukan(_, 0) :- !.
 ambilNKartuDariTumpukan(Pemain, N) :-
     N > 0,
-    ambilSatuDariTumpukan(Pemain),
+    ambilSatuDariTumpukan(Pemain, _),
     N1 is N - 1,
     ambilNKartuDariTumpukan(Pemain, N1).
 
@@ -133,8 +133,8 @@ ambilKartu :-
 
 ambilKartu :-
     giliran([Pemain|_]),
-    ambilSatuDariTumpukan(Pemain),
-    write(Pemain), write(' mengambil 1 kartu.'), nl,
+    ambilSatuDariTumpukan(Pemain, kartu(W,J)),
+    write(Pemain), write(' mendapatkan kartu: '), write(W), write('-'), write(J), write('.'), nl,
     retract(sudahMainKartu(_)),
     assertz(sudahMainKartu(true)),
     nextTurn.
