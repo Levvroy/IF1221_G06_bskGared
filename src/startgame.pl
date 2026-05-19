@@ -11,7 +11,7 @@ startGame :-
     retractall(statusUni(_)),
     retractall(penantangWDF(_)),
     retractall(arahPermainan(_)),
-    retractall(kartuTersembunyi(_,_)),
+    retractall(kartuTersembunyi(_,_)), % penambahan dari spesifikasi bonus
     get_jumlah_pemain(N),
     get_nama_pemain(N, ListPemainRaw),
     nl,
