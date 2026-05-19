@@ -83,6 +83,43 @@ IF1221_G06_bskGared
 
 ---
 
+## Fitur Utama
+
+### Setup Permainan
+- `startGame` - memulai permainan baru, meminta jumlah pemain (2–4) dan nama masing-masing pemain, mengacak urutan giliran, membagikan 7 kartu acak ke tiap pemain, dan menginisiasi discard pile dengan kartu angka acak
+
+### Aksi Utama (1 per giliran)
+- `mainkanKartu(N)` - mainkan kartu ke-N dari tangan pemain yang sedang giliran. Kartu harus valid (cocok warna atau jenis dengan discard top, atau kartu hitam)
+- `ambilKartu` - ambil 1 kartu dari deck, lalu giliran otomatis berpindah
+- `tantang` - tantang pemain sebelumnya yang memainkan Wild Draw Four. Kalau tantangan berhasil (pemain itu sebenarnya punya kartu valid), pemain itu yang kena hukuman 4 kartu. Kalau gagal, penantang kena 6 kartu
+- `uni(N)` - wajib dipakai saat ingin memainkan kartu ke-N yang akan membuat tangan tersisa 1 kartu. Kalau lupa serukan UNI, bisa ditangkap pemain lain
+- `sembunyikanKartu(N)` - sembunyikan kartu ke-N dari tangan. Kartu tersembunyi tidak bisa ditebak pemain lain; jika ada yang menangkap pemain dengan kartu tersembunyi, penangkap malah kena penalti 1 kartu
+- `tampilkanKartu` - tampilkan kembali kartu yang sedang disembunyikan, lalu giliran berpindah
+
+### Aksi Pendukung (bebas berapa kali)
+- `tangkap(NamaPemain)` - tangkap pemain yang sudah punya 1 kartu tapi belum serukan UNI. Nama pemain harus diawali huruf kapital, contoh: `tangkap('William')`
+- `lihatCommand` - tampilkan daftar aksi yang tersedia pada giliran saat ini
+- `lihatKartu` - tampilkan semua kartu di tangan beserta nomor urutnya (kartu yang sedang disembunyikan akan diberi label `(disembunyikan)`)
+- `cekInfo` - tampilkan kartu discard top, urutan pemain, dan jumlah kartu tiap pemain
+
+### Kartu Aksi
+- **Skip** - pemain berikutnya kehilangan giliran
+- **Reverse** - arah giliran dibalik
+- **Draw Two** - pemain berikutnya ambil 2 kartu dan kehilangan giliran
+- **Wild** - pemain bebas ganti warna aktif
+- **Wild Draw Four** - pemain berikutnya ambil 4 kartu dan kehilangan giliran, plus pemain aktif pilih warna baru. Hanya boleh dimainkan kalau tidak punya kartu valid lain (bisa ditantang)
+
+### End Game
+- Permainan otomatis berakhir saat ada pemain yang kartunya habis
+- Poin dihitung dari sisa kartu pemain lain:
+  - Kartu angka → sesuai angkanya
+  - Skip / Reverse / Draw Two → 10 poin
+  - Wild / Wild Draw Four → 20 poin
+- Pemain diurutkan berdasarkan poin terkecil; pemenang adalah pemain yang menghabiskan kartunya
+
+### Save dan Load Game
+- `saveGame` - simpan kondisi permainan saat ini ke file `.txt`, mencakup urutan pemain, arah permainan, kartu di tangan setiap pemain, discard top, warna aktif, status UNI, dan kartu tersembunyi
+- `loadGame` - muat kembali permainan dari file `.txt` yang sudah disimpan sebelumnya
 
 ---
 
