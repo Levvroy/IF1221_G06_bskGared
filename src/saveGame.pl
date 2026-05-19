@@ -1,10 +1,10 @@
-:- dynamic giliran/1.
-:- dynamic kartudiTangan/2.
-:- dynamic kartuTeratas/2.
-:- dynamic warnaActive/1.
-:- dynamic statusUni/1.
-:- dynamic arahPermainan/1.
-:- dynamic kartuTersembunyi/2.
+:- dynamic(giliran/1).
+:- dynamic(kartudiTangan/2).
+:- dynamic(kartuTeratas/2).
+:- dynamic(warnaActive/1).
+:- dynamic(statusUni/1).
+:- dynamic(arahPermainan/1).
+:- dynamic(kartuTersembunyi/2). % penambahan dari spesifikasi bonus
 
 saveGame :-
     write('Masukkan nama file penyimpanan: '),

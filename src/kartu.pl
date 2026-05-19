@@ -5,8 +5,8 @@
 :- dynamic(tumpukan_kartu/1).
 :- dynamic(arahPermainan/1).
 
-:- discontiguous valid_lempar/2.
-:- discontiguous efek_kartu/1.
+:- discontiguous(valid_lempar/2).
+:- discontiguous(efek_kartu/1).
 
 kartu(merah, 0). kartu(merah, 1). kartu(merah, 2). kartu(merah, 3). kartu(merah, 4).
 kartu(merah, 5). kartu(merah, 6). kartu(merah, 7). kartu(merah, 8). kartu(merah, 9).
@@ -62,84 +62,61 @@ efek_kartu(Jenis) :- integer(Jenis), !.
 
 efek_kartu(skip) :-
     giliran([PemainSekarang, PemainBerikutnya|SisaPemain]),
-    write('-> EFEK AKTIF: Kartu Skip!'), nl,
-    write('-> Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
-    append_element(SisaPemain, PemainSekarang, AntreanTmp),
-    append_element(AntreanTmp, PemainBerikutnya, AntreanBaru),
+    write('EFEK AKTIF: Kartu Skip!'), nl,
+    write('Pemain '), write(PemainBerikutnya), write(' kehilangan gilirannya.'), nl,
+    append_element(SisaPemain, PemainBerikutnya, AntreanBaru),
     retract(giliran(_)),
-    assertz(giliran(AntreanBaru)), !.
+    assertz(giliran([PemainSekarang | AntreanBaru])), !.
 
 efek_kartu(reverse) :-
-    giliran(Lama),
-    reverse_list(Lama, Baru),
+    giliran([PemainSekarang|SisaPemain]),
+    reverse_list(SisaPemain, SisaReversed),
     retract(giliran(_)),
-    assertz(giliran(Baru)),
+    assertz(giliran([PemainSekarang|SisaReversed])),
     retract(arahPermainan(ArahLama)),
     (ArahLama = kanan ->
         assertz(arahPermainan(kiri))
     ;
         assertz(arahPermainan(kanan))
     ),
-    write('-> EFEK AKTIF: Kartu Reverse!'), nl,
-    write('-> Arah permainan dibalikkan!'), nl, !.
+    write('EFEK AKTIF: Kartu Reverse!'), nl,
+    write('Arah permainan dibalikkan!'), nl, !.
 
 efek_kartu(drawTwo) :-
     giliran([PemainSekarang, PemainBerikutnya|SisaPemain]),
-    write('-> EFEK AKTIF: Kartu Draw Two!'), nl,
-    write('-> Pemain '), write(PemainBerikutnya), write(' harus mengambil 2 kartu dan kehilangan gilirannya.'), nl,
-    tumpukan_kartu([Kartu1, Kartu2|SisaDeck]),
-    retract(tumpukan_kartu(_)),
-    assertz(tumpukan_kartu(SisaDeck)),
-    kartudiTangan(PemainBerikutnya, Tangan),
-    append_element(Tangan, Kartu1, TanganTmp),
-    append_element(TanganTmp, Kartu2, TanganBaru),
-    retract(kartudiTangan(PemainBerikutnya, _)),
-    assertz(kartudiTangan(PemainBerikutnya, TanganBaru)),
-    write('-> (sistem: 2 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
-    append_element(SisaPemain, PemainSekarang, AntreanTmp2),
-    append_element(AntreanTmp2, PemainBerikutnya, AntreanBaru),
+    write('EFEK AKTIF: Kartu Draw Two!'), nl,
+    write('Pemain '), write(PemainBerikutnya), write(' harus mengambil 2 kartu dan kehilangan gilirannya.'), nl,
+    ambilNKartuDariTumpukan(PemainBerikutnya, 2),
+    write('(sistem: 2 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
+    append_element(SisaPemain, PemainBerikutnya, AntreanBaru),
     retract(giliran(_)),
-    assertz(giliran(AntreanBaru)), !.
+    assertz(giliran([PemainSekarang | AntreanBaru])), !.
 
 efek_kartu(wild) :-
-    write('-> EFEK AKTIF: Kartu Wild!'), nl,
+    write('EFEK AKTIF: Kartu Wild!'), nl,
     write('Pilih warna aktif baru (merah/kuning/hijau/biru): '),
     read(WarnaBaru),
     (WarnaBaru = merah ; WarnaBaru = kuning ; WarnaBaru = hijau ; WarnaBaru = biru), !,
     retract(warnaActive(_)),
     assertz(warnaActive(WarnaBaru)),
-    write('-> Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl.
+    write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl.
 
 efek_kartu(wild) :-
-    write('-> Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
+    write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wild).
 
 efek_kartu(wildDrawFour) :-
-    giliran([PemainSekarang, PemainBerikutnya|SisaPemain]),
-    write('-> EFEK AKTIF: Kartu Wild Draw Four!'), nl,
+    giliran([PemainSekarang, PemainBerikutnya|_]),
+    write('EFEK AKTIF: Kartu Wild Draw Four!'), nl,
     write('Masukkan warna aktif baru (merah/kuning/hijau/biru) diakhiri titik: '),
     read(WarnaBaru),
     (WarnaBaru = merah ; WarnaBaru = kuning ; WarnaBaru = hijau ; WarnaBaru = biru), !,
     retract(warnaActive(_)),
     assertz(warnaActive(WarnaBaru)),
-    write('-> Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
-    write('-> Pemain '), write(PemainBerikutnya), write(' mengambil 4 kartu dan kehilangan gilirannya.'), nl,
-    tumpukan_kartu([K1, K2, K3, K4|SisaDeck]),
-    retract(tumpukan_kartu(_)),
-    assertz(tumpukan_kartu(SisaDeck)),
-    kartudiTangan(PemainBerikutnya, Tangan),
-    append_element(Tangan, K1, T1),
-    append_element(T1, K2, T2),
-    append_element(T2, K3, T3),
-    append_element(T3, K4, TanganBaru),
-    retract(kartudiTangan(PemainBerikutnya, _)),
-    assertz(kartudiTangan(PemainBerikutnya, TanganBaru)),
-    write('-> (sistem: 4 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
-    append_element(SisaPemain, PemainSekarang, AntreanTmp),
-    append_element(AntreanTmp, PemainBerikutnya, AntreanBaru),
-    retract(giliran(_)),
-    assertz(giliran(AntreanBaru)), !.
+    write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
+    write('Peringatan: '), write(PemainBerikutnya), write(' sedang ditargetkan WDF!'), nl,
+    write('Pada gilirannya, '), write(PemainBerikutnya), write(' wajib memanggil "tantang." atau "ambilKartu." (terima 4 penalti).'), nl, !.
 
 efek_kartu(wildDrawFour) :-
-    write('-> Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
+    write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wildDrawFour).

@@ -6,6 +6,7 @@
 :- dynamic(sudahMainKartu/1).
 :- dynamic(statusUni/1).
 :- dynamic(penantangWDF/1).
+:- dynamic(statusBluffWDF/1).
 :- dynamic(arahPermainan/1).
 :- dynamic(kartuTersembunyi/2). % penambahan dari spesifikasi bonus
 
@@ -41,7 +42,10 @@ ambilSatuDariTumpukan(Pemain, kartu(W,J)) :-
     kartudiTangan(Pemain, Tangan),
     append_element(Tangan, kartu(W,J), TanganBaru),
     retract(kartudiTangan(Pemain, _)),
-    assertz(kartudiTangan(Pemain, TanganBaru)).
+    assertz(kartudiTangan(Pemain, TanganBaru)),
+    retract(statusUni(ListUni)),
+    hapusDariList(Pemain, ListUni, ListUniBaru),
+    assertz(statusUni(ListUniBaru)).
 
 ambilNKartuDariTumpukan(_, 0) :- !.
 ambilNKartuDariTumpukan(Pemain, N) :-
@@ -57,8 +61,6 @@ nextTurn :-
     assertz(giliran(ListBaru)),
     retract(sudahMainKartu(_)),
     assertz(sudahMainKartu(false)),
-    retract(penantangWDF(_)),
-    assertz(penantangWDF(none)),
     giliran([Berikutnya|_]),
     write('Giliran '), write(Berikutnya), write('.'), nl.
 
@@ -74,6 +76,11 @@ bisaDimainkan(_, Jenis) :-
 mainkanKartu(_) :-
     sudahMainKartu(true), !,
     write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+
+mainkanKartu(_) :-
+    penantangWDF(PemainWDF),
+    PemainWDF \= none, !,
+    write('Aksi ditolak! Kamu sedang ditargetkan WDF. Silakan ketik "tantang." atau "ambilKartu." (untuk menyerah).'), nl.
 
 mainkanKartu(N) :-
     giliran([Pemain|_]),
@@ -95,9 +102,13 @@ mainkanKartu(N) :-
     kartudiTangan(Pemain, TanganPemain),
     ambilIndex(N, TanganPemain, kartu(Warna, Jenis)),
     (Jenis = wildDrawFour ->
+        retractall(statusBluffWDF(_)),
         (\+ valid_lempar_wild_draw_four(Pemain) ->
+            assertz(statusBluffWDF(curang)),
             write('[Peringatan] Kamu masih punya kartu yang bisa dimainkan. Bisa ditantang lho.'), nl
-        ; true)
+        ; 
+            assertz(statusBluffWDF(jujur))
+        )
     ; true),
     hapusIndex(N, TanganPemain, TanganBaru),
     retract(kartudiTangan(Pemain, _)),
@@ -110,9 +121,6 @@ mainkanKartu(N) :-
     write(Warna), write('-'), write(Jenis), write('.'), nl,
     retract(sudahMainKartu(_)),
     assertz(sudahMainKartu(true)),
-    retract(statusUni(ListUni)),
-    hapusDariList(Pemain, ListUni, ListUniBaru),
-    assertz(statusUni(ListUniBaru)),
     (kartuTersembunyi(Pemain, kartu(Warna, Jenis)) ->
         retract(kartuTersembunyi(Pemain, _))
     ; true),
@@ -130,6 +138,18 @@ mainkanKartu(N) :-
 ambilKartu :-
     sudahMainKartu(true), !,
     write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+
+ambilKartu :-
+    penantangWDF(PemainWDF),
+    PemainWDF \= none, !,
+    giliran([Pemain|_]),
+    write(Pemain), write(' menyerah dan menerima hukuman 4 kartu dari WDF.'), nl,
+    ambilNKartuDariTumpukan(Pemain, 4),
+    retract(penantangWDF(_)),
+    assertz(penantangWDF(none)),
+    retract(sudahMainKartu(_)),
+    assertz(sudahMainKartu(true)),
+    nextTurn.
 
 ambilKartu :-
     giliran([Pemain|_]),
@@ -150,20 +170,24 @@ tantang :-
 tantang :-
     penantangWDF(PemainWDF),
     giliran([Penantang|_]),
-    (valid_lempar_wild_draw_four(PemainWDF) ->
-        write('Tantangan gagal! '),
-        write(PemainWDF), write(' memang tidak punya kartu valid.'), nl,
-        write(Penantang), write(' mengambil 6 kartu.'), nl,
-        ambilNKartuDariTumpukan(Penantang, 6)
+    statusBluffWDF(Status),
+    (Status = jujur ->
+        write('Tantangan gagal! '), write(PemainWDF), write(' bermain jujur karena tidak punya kartu valid saat melempar WDF.'), nl,
+        write(Penantang), write(' mengambil 6 kartu penalti (4 kartu WDF + 2 denda) dan kehilangan gilirannya.'), nl,
+        ambilNKartuDariTumpukan(Penantang, 6),
+        retract(penantangWDF(_)),
+        assertz(penantangWDF(none)),
+        retract(sudahMainKartu(_)),
+        assertz(sudahMainKartu(true)),
+        nextTurn
     ;
-        write('Tantangan berhasil! '),
-        write(PemainWDF), write(' ternyata masih punya kartu yang bisa dimainkan!'), nl,
-        write(PemainWDF), write(' mengambil 4 kartu.'), nl,
-        ambilNKartuDariTumpukan(PemainWDF, 4)
-    ),
-    retract(sudahMainKartu(_)),
-    assertz(sudahMainKartu(true)),
-    nextTurn.
+        write('Tantangan berhasil! '), write(PemainWDF), write(' curang karena diam-diam masih punya kartu valid!'), nl,
+        write(PemainWDF), write(' dihukum mengambil 4 kartu.'), nl,
+        ambilNKartuDariTumpukan(PemainWDF, 4),
+        retract(penantangWDF(_)),
+        assertz(penantangWDF(none)),
+        write('Giliranmu aman. Silakan jalankan aksi normalmu sekarang (mainkanKartu atau ambilKartu).'), nl
+    ).
 
 uni(_) :-
     sudahMainKartu(true), !,
