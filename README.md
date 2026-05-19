@@ -52,7 +52,7 @@ Proyek ini dibuat sebagai tugas besar mata kuliah IF1221 Logika Komputasional da
 
 4. Di dalam prompt GNU Prolog, load file utama
    ```prolog
-   | ?- consult('main.pl').
+   | ?- include('main.pl').
    ```
 
 5. Mulai permainan
@@ -76,6 +76,8 @@ IF1221_G06_bskGared
 │   ├── endGame.pl      % Logika akhir permainan dan ranking
 │   └── saveGame.pl     % Fitur simpan dan muat permainan
 ├── docs
+│   ├── Milestone1_G06.pdf
+│   ├── Milestone2_G06.pdf
 └── README.md
 ```
 
