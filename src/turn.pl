@@ -7,7 +7,7 @@
 :- dynamic statusUni/1.
 :- dynamic penantangWDF/1.
 :- dynamic arahPermainan/1.
-:- dynamic kartuTersembunyi/2.
+:- dynamic kartuTersembunyi/2. % penambahan dari spesifikasi bonus
 
 ambilIndex(1, [H|_], H) :- !.
 ambilIndex(N, [_|T], X) :-
