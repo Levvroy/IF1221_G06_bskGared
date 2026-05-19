@@ -1,13 +1,13 @@
-:- dynamic giliran/1.
-:- dynamic kartudiTangan/2.
-:- dynamic kartuTeratas/2.
-:- dynamic warnaActive/1.
-:- dynamic tumpukan_kartu/1.
-:- dynamic sudahMainKartu/1.
-:- dynamic statusUni/1.
-:- dynamic penantangWDF/1.
-:- dynamic arahPermainan/1.
-:- dynamic kartuTersembunyi/2. % penambahan dari spesifikasi bonus
+:- dynamic(giliran/1).
+:- dynamic(kartudiTangan/2).
+:- dynamic(kartuTeratas/2).
+:- dynamic(warnaActive/1).
+:- dynamic(tumpukan_kartu/1).
+:- dynamic(sudahMainKartu/1).
+:- dynamic(statusUni/1).
+:- dynamic(penantangWDF/1).
+:- dynamic(arahPermainan/1).
+:- dynamic(kartuTersembunyi/2). % penambahan dari spesifikasi bonus
 
 ambilIndex(1, [H|_], H) :- !.
 ambilIndex(N, [_|T], X) :-
@@ -187,11 +187,6 @@ uni(N) :-
     assertz(statusUni(ListUniBaru)),
     write(Pemain), write(' menyerukan UNI!'), nl,
     mainkanKartu(N).
-
-tangkap(_) :-
-    giliran([Pemain|_]),
-    Pemain = _, !,
-    tangkapProses(_).
 
 tangkap(NamaPemain) :-
     atom_chars(NamaPemain, [H|_]),
