@@ -98,7 +98,7 @@ efek_kartu(reverse) :-
     giliran(Lama),
     reverse_list(Lama, Baru),
     retract(giliran(_)),
-    asserta(giliran(Baru)),
+    assertz(giliran(Baru)),
     retract(arahPermainan(ArahLama)),
     (ArahLama = kanan ->
         assertz(arahPermainan(kiri))
@@ -131,6 +131,17 @@ valid_lempar(hitam, wild) :-
     JenisTeratas \= wild,
     JenisTeratas \= wildDrawFour, !.
 
+valid_lempar_wild_draw_four(NamaPemain) :-
+    kartuTeratas(WarnaMeja, JenisMeja),
+    warnaActive(WarnaAktifMeja),
+    kartudiTangan(NamaPemain, ListKartuTangan),
+    \+ cekAdaKartuValid(WarnaAktifMeja, WarnaMeja, JenisMeja, ListKartuTangan).
+
+cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, [kartu(W,J)|_]) :-
+    (W = WarnaAktif ; W = WarnaMeja ; J = JenisMeja), !.
+cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, [_|Sisa]) :-
+    cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, Sisa).
+
 efek_kartu(wild) :-
     write('-> EFEK AKTIF: Kartu Wild!'), nl,
     write('Pilih warna aktif baru (merah/kuning/hijau/biru): '),
@@ -143,17 +154,6 @@ efek_kartu(wild) :-
 efek_kartu(wild) :-
     write('-> Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wild).
-
-valid_lempar_wild_draw_four(NamaPemain) :-
-    kartuTeratas(WarnaMeja, JenisMeja),
-    warnaActive(WarnaAktifMeja),
-    kartudiTangan(NamaPemain, ListKartuTangan),
-    \+ cekAdaKartuValid(WarnaAktifMeja, WarnaMeja, JenisMeja, ListKartuTangan).
-
-cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, [kartu(W,J)|_]) :-
-    (W = WarnaAktif ; W = WarnaMeja ; J = JenisMeja), !.
-cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, [_|Sisa]) :-
-    cekAdaKartuValid(WarnaAktif, WarnaMeja, JenisMeja, Sisa).
 
 efek_kartu(wildDrawFour) :-
     giliran([PemainSekarang, PemainBerikutnya|SisaPemain]),
