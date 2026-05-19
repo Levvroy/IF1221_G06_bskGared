@@ -7,10 +7,10 @@
 :- initialization(main).
 
 main :-
-    write('\n  Ketik "startgame." untuk memulai permainan. \n  >> '),
+    write('\n  Ketik "startGame." untuk memulai permainan. \n  >> '),
     read(Command),
     (
-        Command = 'startgame.' ->
+        Command = 'startGame.' ->
         startGame
         ;
         Command = 'exit' ->
