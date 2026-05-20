@@ -88,9 +88,9 @@ efek_kartu(drawTwo) :-
     write('Pemain '), write(PemainBerikutnya), write(' harus mengambil 2 kartu dan kehilangan gilirannya.'), nl,
     ambilNKartuDariTumpukan(PemainBerikutnya, 2),
     write('(sistem: 2 kartu telah ditambahkan ke tangan '), write(PemainBerikutnya), write(')'), nl,
-    append_element(SisaPemain, PemainBerikutnya, AntreanBaru),
+    append_element(SisaPemain, PemainSekarang, AntreanTmp),
     retract(giliran(_)),
-    assertz(giliran([PemainSekarang | AntreanBaru])), !.
+    assertz(giliran([PemainBerikutnya | AntreanTmp])), !.
 
 efek_kartu(wild) :-
     write('EFEK AKTIF: Kartu Wild!'), nl,
