@@ -11,7 +11,9 @@ startGame :-
     retractall(statusUni(_)),
     retractall(penantangWDF(_)),
     retractall(arahPermainan(_)),
-    retractall(kartuTersembunyi(_,_)), % penambahan dari spesifikasi bonus
+    retractall(kartuTersembunyi(_,_)), % penambahan spesifikasi bonus
+    retractall(aksiTerakhir(_,_,_,_)),
+    retractall(giliranKe(_)),
     get_jumlah_pemain(N),
     get_nama_pemain(N, ListPemainRaw),
     nl,
@@ -24,6 +26,7 @@ startGame :-
     assertz(statusUni([])),
     assertz(penantangWDF(none)),
     assertz(arahPermainan(kanan)),
+    assertz(giliranKe(1)),
     write('Urutan pemain: '), cetak_urutan(ListPemain), write('.'), nl, nl,
     write('Setiap pemain mendapatkan 7 kartu acak.'), nl, nl,
     initDiscardPile(DeckSisa, DeckFinal),
@@ -51,7 +54,6 @@ initDiscardPile([kartu(W,J)|Sisa], Sisa) :-
     assertz(kartuTeratas(W, J)),
     assertz(warnaActive(W)),
     write('Kartu discard top: '), write(W), write('-'), write(J), write('.'), nl, nl.
-
 initDiscardPile([Kartu|Sisa], DeckFinal) :-
     append_element(Sisa, Kartu, DeckBaru),
     initDiscardPile(DeckBaru, DeckFinal).

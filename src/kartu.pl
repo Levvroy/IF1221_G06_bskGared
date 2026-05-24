@@ -4,6 +4,8 @@
 :- dynamic(warnaActive/1).
 :- dynamic(tumpukan_kartu/1).
 :- dynamic(arahPermainan/1).
+:- dynamic(aksiTerakhir/4).
+:- dynamic(giliranKe/1).
 
 :- discontiguous(valid_lempar/2).
 :- discontiguous(efek_kartu/1).
@@ -25,6 +27,7 @@ kartu(merah, reverse). kartu(kuning, reverse). kartu(hijau, reverse). kartu(biru
 kartu(merah, drawTwo). kartu(kuning, drawTwo). kartu(hijau, drawTwo). kartu(biru, drawTwo).
 kartu(hitam, wild).
 kartu(hitam, wildDrawFour).
+kartu(hitam, mimic).
 
 valid_lempar(Warna, Jenis) :-
     warnaActive(WarnaSekarang),
@@ -35,6 +38,8 @@ valid_lempar(hitam, wild) :-
     kartuTeratas(_, JenisTeratas),
     JenisTeratas \= wild,
     JenisTeratas \= wildDrawFour, !.
+
+valid_lempar(hitam, mimic) :- !.
 
 valid_lempar_wild_draw_four(NamaPemain) :-
     kartuTeratas(WarnaMeja, JenisMeja),
@@ -74,11 +79,7 @@ efek_kartu(reverse) :-
     retract(giliran(_)),
     assertz(giliran([PemainSekarang|SisaReversed])),
     retract(arahPermainan(ArahLama)),
-    (ArahLama = kanan ->
-        assertz(arahPermainan(kiri))
-    ;
-        assertz(arahPermainan(kanan))
-    ),
+    (ArahLama = kanan -> assertz(arahPermainan(kiri)) ; assertz(arahPermainan(kanan))),
     write('EFEK AKTIF: Kartu Reverse!'), nl,
     write('Arah permainan dibalikkan!'), nl, !.
 
@@ -100,7 +101,6 @@ efek_kartu(wild) :-
     retract(warnaActive(_)),
     assertz(warnaActive(WarnaBaru)),
     write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl.
-
 efek_kartu(wild) :-
     write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wild).
@@ -116,7 +116,39 @@ efek_kartu(wildDrawFour) :-
     write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
     write('Peringatan: '), write(PemainBerikutnya), write(' sedang ditargetkan WDF!'), nl,
     write('Pada gilirannya, '), write(PemainBerikutnya), write(' wajib memanggil "tantang." atau "ambilKartu." (terima 4 penalti).'), nl, !.
-
 efek_kartu(wildDrawFour) :-
     write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wildDrawFour).
+
+pilihWarnaAktif :-
+    write('Pilih warna (merah/kuning/hijau/biru): '),
+    read(WarnaBaru),
+    (WarnaBaru = merah ; WarnaBaru = kuning ; WarnaBaru = hijau ; WarnaBaru = biru), !,
+    retract(warnaActive(_)),
+    assertz(warnaActive(WarnaBaru)),
+    write('Warna aktif sekarang: '), write(WarnaBaru), write('.'), nl.
+pilihWarnaAktif :-
+    write('Warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
+    pilihWarnaAktif.
+
+%penambahan efek kartu mimic
+
+efekMimic(wild) :- !, efek_kartu(wild).
+efekMimic(wildDrawFour) :- !, efek_kartu(wildDrawFour).
+efekMimic(J) :- efek_kartu(J), pilihWarnaAktif.
+
+efek_kartu(mimic) :-
+    write('Menelusuri riwayat permainan.'), nl,
+    (aksiTerakhir(W, J, Siapa, GAksi) ->
+        giliranKe(GSekarang),
+        GiliranLalu is GSekarang - GAksi,
+        write('Kartu aksi terakhir yang dimainkan: '),
+        write(W), write('-'), write(J),
+        write(' (oleh '), write(Siapa), write(', '),
+        write(GiliranLalu), write(' giliran lalu)'), nl,
+        write('Kartu mimic menyalin efek '), write(J), write('!'), nl,
+        efekMimic(J)
+    ;
+        write('Belum ada kartu aksi sebelumnya. Mimic berlaku seperti Wild!'), nl,
+        efekMimic(wild)
+    ).

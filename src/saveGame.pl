@@ -4,7 +4,8 @@
 :- dynamic(warnaActive/1).
 :- dynamic(statusUni/1).
 :- dynamic(arahPermainan/1).
-:- dynamic(kartuTersembunyi/2). % penambahan dari spesifikasi bonus
+:- dynamic(kartuTersembunyi/2).
+:- dynamic(aksiTerakhir/4).
 
 saveGame :-
     write('Masukkan nama file penyimpanan: '),
@@ -24,6 +25,7 @@ tulisSemuaData :-
     tulisDiscardTop,
     tulisWarnaAktif,
     tulisStatusUni,
+    tulisAksiTerakhir,
     tulisKartuTersembunyi,
     tulisKartuSemuaPemain.
 
@@ -53,9 +55,14 @@ tulisStatusUni :-
     write('status_uni:'),
     tulisListPemain(ListUni), nl.
 
+tulisAksiTerakhir :-
+    (aksiTerakhir(W, J, Pemain, _) ->
+        write('kartu_aksi_terakhir:'),
+        write(W), write('-'), write(J), write('-'), write(Pemain), nl
+    ; true).
+
 tulisKartuTersembunyi :-
     \+ kartuTersembunyi(_, _), !.
-
 tulisKartuTersembunyi :-
     giliran(ListPemain),
     tulisTersembunyiPerPemain(ListPemain).
