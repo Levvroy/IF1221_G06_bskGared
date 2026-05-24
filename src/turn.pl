@@ -8,7 +8,9 @@
 :- dynamic(penantangWDF/1).
 :- dynamic(statusBluffWDF/1).
 :- dynamic(arahPermainan/1).
-:- dynamic(kartuTersembunyi/2). % penambahan dari spesifikasi bonus
+:- dynamic(kartuTersembunyi/2). %penambahan kartu tersembunyi
+:- dynamic(aksiTerakhir/4).
+:- dynamic(giliranKe/1).
 
 ambilIndex(1, [H|_], H) :- !.
 ambilIndex(N, [_|T], X) :-
@@ -61,14 +63,15 @@ nextTurn :-
     assertz(giliran(ListBaru)),
     retract(sudahMainKartu(_)),
     assertz(sudahMainKartu(false)),
+    retract(giliranKe(G)),
+    G1 is G + 1,
+    assertz(giliranKe(G1)),
     giliran([Berikutnya|_]),
     write('Giliran '), write(Berikutnya), write('.'), nl.
 
 bisaDimainkan(hitam, _) :- !.
-
 bisaDimainkan(Warna, _) :-
     warnaActive(Warna), !.
-
 bisaDimainkan(_, Jenis) :-
     kartuTeratas(_, JenisTeratas),
     Jenis = JenisTeratas, !.
@@ -106,7 +109,7 @@ mainkanKartu(N) :-
         (\+ valid_lempar_wild_draw_four(Pemain) ->
             assertz(statusBluffWDF(curang)),
             write('[Peringatan] Kamu masih punya kartu yang bisa dimainkan. Bisa ditantang lho.'), nl
-        ; 
+        ;
             assertz(statusBluffWDF(jujur))
         )
     ; true),
@@ -129,6 +132,11 @@ mainkanKartu(N) :-
         assertz(penantangWDF(Pemain))
     ; true),
     efek_kartu(Jenis),
+    (Jenis \= mimic, is_action_card(Jenis) ->
+        giliranKe(G),
+        retractall(aksiTerakhir(_,_,_,_)),
+        assertz(aksiTerakhir(Warna, Jenis, Pemain, G))
+    ; true),
     (TanganBaru = [] ->
         endGame(Pemain)
     ;
@@ -321,9 +329,7 @@ lihatKartu :-
 cetakKartuDenganStatus([], _, _).
 cetakKartuDenganStatus([kartu(W,J)|T], N, Pemain) :-
     write(N), write('. '), write(W), write('-'), write(J),
-    (kartuTersembunyi(Pemain, kartu(W,J)) ->
-        write(' (disembunyikan)')
-    ; true),
+    (kartuTersembunyi(Pemain, kartu(W,J)) -> write(' (disembunyikan)') ; true),
     nl,
     N1 is N + 1,
     cetakKartuDenganStatus(T, N1, Pemain).
