@@ -63,6 +63,26 @@ reverse_helper([], Acc, Acc).
 reverse_helper([Head|Tail], Acc, Reversed) :-
     reverse_helper(Tail, [Head|Acc], Reversed).
 
+cek_semua_satu_kartu([]).
+cek_semua_satu_kartu([P|T]) :-
+    kartudiTangan(P, Tangan),
+    hitungPanjang(Tangan, Len), 
+    Len =< 1,
+    cek_semua_satu_kartu(T).
+
+pilih_giver_receiver(ListPemain, Len, Giver, Receiver) :-
+    random(0, Len, Idx1),
+    ambil_elemen_ke(Idx1, ListPemain, Giver, SisaPemain), 
+    kartudiTangan(Giver, TanganGiver),
+    hitungPanjang(TanganGiver, LenTangan),
+    ( LenTangan =:= 0 ->
+        pilih_giver_receiver(ListPemain, Len, Giver, Receiver) 
+    ;
+        LenSisa is Len - 1,
+        random(0, LenSisa, Idx2),
+        ambil_elemen_ke(Idx2, SisaPemain, Receiver, _)
+    ).
+
 efek_kartu(Jenis) :- integer(Jenis), !.
 
 efek_kartu(skip) :-
@@ -151,4 +171,40 @@ efek_kartu(mimic) :-
     ;
         write('Belum ada kartu aksi sebelumnya. Mimic berlaku seperti Wild!'), nl,
         efekMimic(wild)
+    ).
+
+godsHand :-
+    giliran(ListPemain),
+    
+    ( cek_semua_satu_kartu(ListPemain) ->
+        nl, write('Gagal! God''s Hand dibatalkan karena seluruh pemain hanya memiliki 1 kartu.'), nl
+    ;
+        hitungPanjang(ListPemain, JumlahPemain),
+        pilih_giver_receiver(ListPemain, JumlahPemain, Giver, Receiver),
+        kartudiTangan(Giver, TanganGiver),
+        hitungPanjang(TanganGiver, JumlahKartuGiver),
+        random(0, JumlahKartuGiver, IdxKartu),
+        ambil_elemen_ke(IdxKartu, TanganGiver, KartuDipindah, TanganGiverBaru),
+        kartudiTangan(Receiver, TanganReceiver),
+        append_element(TanganReceiver, KartuDipindah, TanganReceiverBaru),
+ 
+        retract(kartudiTangan(Giver, _)),
+        assertz(kartudiTangan(Giver, TanganGiverBaru)),
+        retract(kartudiTangan(Receiver, _)),
+        assertz(kartudiTangan(Receiver, TanganReceiverBaru)),
+        
+        KartuDipindah = kartu(Warna, Jenis),
+        nl, write('Tuhan telah berkehendak.'), nl,
+        write('Kartu '), write(Warna), write('-'), write(Jenis), write(' milik '), write(Giver), write(' berpindah ke tangan '), 
+        write(Receiver), write(' !'), nl,
+
+        ListPemain = [PemainSekarang | SisaPemain],
+            append_element(SisaPemain, PemainSekarang, AntreanBaru),
+            retract(giliran(_)),
+            assertz(giliran(AntreanBaru)),
+            retractall(sudahMainKartu(_)),
+            assertz(sudahMainKartu(false)),
+
+            AntreanBaru = [PemainBerikutnya | _],
+            nl, write('Giliran '), write(PemainBerikutnya), write('.'), nl
     ).
