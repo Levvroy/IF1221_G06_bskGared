@@ -8,15 +8,13 @@
 :- dynamic(aksiTerakhir/4).
 
 saveGame :-
-    write('Masukkan nama file penyimpanan: '),
+    write('Masukkan nama file penyimpanan : '),
     read(NamaFile),
-    atom_string(NamaFile, NamaStr),
-    string_concat(NamaStr, '.txt', NamaFileExt),
-    atom_string(NamaFileAtom, NamaFileExt),
+    atom_concat(NamaFile, '.txt', NamaFileAtom),
     tell(NamaFileAtom),
     tulisSemuaData,
     told,
-    write('Status permainan berhasil disimpan ke '), write(NamaFileExt), write('.'), nl.
+    write('Status permainan berhasil disimpan ke '), write(NamaFileAtom), write('.'), nl.
 
 tulisSemuaData :-
     tulisArahPermainan,
