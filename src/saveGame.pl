@@ -8,7 +8,7 @@
 :- dynamic(aksiTerakhir/4).
 
 saveGame :-
-    write('Masukkan nama file penyimpanan : '),
+    write('Masukkan nama file penyimpanan: '),
     read(NamaFile),
     atom_concat(NamaFile, '.txt', NamaFileAtom),
     tell(NamaFileAtom),
@@ -17,19 +17,15 @@ saveGame :-
     write('Status permainan berhasil disimpan ke '), write(NamaFileAtom), write('.'), nl.
 
 tulisSemuaData :-
-    tulisArahPermainan,
     tulisUrutanPemain,
     tulisGiliran,
     tulisDiscardTop,
     tulisWarnaAktif,
+    tulisArahPermainan,
     tulisStatusUni,
     tulisAksiTerakhir,
     tulisKartuTersembunyi,
     tulisKartuSemuaPemain.
-
-tulisArahPermainan :-
-    arahPermainan(Arah),
-    write('arah_permainan:'), write(Arah), nl.
 
 tulisUrutanPemain :-
     giliran(ListPemain),
@@ -38,7 +34,7 @@ tulisUrutanPemain :-
 
 tulisGiliran :-
     giliran([Sekarang|_]),
-    write('giliran:'), write(Sekarang), nl.
+    write('giliran:'), writeq(Sekarang), nl.
 
 tulisDiscardTop :-
     kartuTeratas(W, J),
@@ -48,15 +44,19 @@ tulisWarnaAktif :-
     warnaActive(Warna),
     write('warna_aktif:'), write(Warna), nl.
 
+tulisArahPermainan :-
+    arahPermainan(Arah),
+    write('arah_permainan:'), write(Arah), nl.
+
 tulisStatusUni :-
     statusUni(ListUni),
-    write('status_uni:'),
+    write('status_UNI:'),
     tulisListPemain(ListUni), nl.
 
 tulisAksiTerakhir :-
     (aksiTerakhir(W, J, Pemain, _) ->
         write('kartu_aksi_terakhir:'),
-        write(W), write('-'), write(J), write('-'), write(Pemain), nl
+        write(W), write('-'), write(J), write('-'), writeq(Pemain), nl
     ; true).
 
 tulisKartuTersembunyi :-
@@ -68,7 +68,7 @@ tulisKartuTersembunyi :-
 tulisTersembunyiPerPemain([]).
 tulisTersembunyiPerPemain([P|Sisa]) :-
     (kartuTersembunyi(P, kartu(W,J)) ->
-        write('kartu_tersembunyi:'), write(P), write('-'), write(W), write('-'), write(J), nl
+        write('kartu_tersembunyi:'), writeq(P), write('-'), write(W), write('-'), write(J), nl
     ; true),
     tulisTersembunyiPerPemain(Sisa).
 
@@ -79,7 +79,7 @@ tulisKartuSemuaPemain :-
 tulisKartuPerPemain([]).
 tulisKartuPerPemain([P|Sisa]) :-
     kartudiTangan(P, Tangan),
-    write('kartu_'), write(P), write(':'),
+    write('kartu('), writeq(P), write('):'),
     tulisListKartu(Tangan), nl,
     tulisKartuPerPemain(Sisa).
 
@@ -89,9 +89,9 @@ tulisListPemain(List) :-
     write(']').
 
 tulisIsiListPemain([]).
-tulisIsiListPemain([X]) :- write(X), !.
+tulisIsiListPemain([X]) :- writeq(X), !.
 tulisIsiListPemain([X|T]) :-
-    write(X), write(','),
+    writeq(X), write(','),
     tulisIsiListPemain(T).
 
 tulisListKartu(List) :-
