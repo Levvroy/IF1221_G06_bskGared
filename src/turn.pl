@@ -420,9 +420,14 @@ cetakUrutan([H|T]) :- write(H), write(' - '), cetakUrutan(T).
 cetakInfoPemain([], _).
 cetakInfoPemain([P|T], N) :-
     kartudiTangan(P, Tangan),
-    hitungPanjang(Tangan, Jumlah),
+    hitungPanjang(Tangan, JumlahTotal),
+    (kartuTersembunyi(P, _) ->
+        JumlahTerlihat is JumlahTotal - 1
+    ;
+        JumlahTerlihat = JumlahTotal
+    ),
     write('Nama pemain '), write(N), write(' : '), write(P), nl,
-    write('Jumlah kartu    : '), write(Jumlah), nl,
+    write('Jumlah kartu    : '), write(JumlahTerlihat), nl,
     nl,
     N1 is N + 1,
     cetakInfoPemain(T, N1).
