@@ -37,6 +37,31 @@ hapusDariList(X, [H|T], [H|Hasil]) :-
 cekAnggota(X, [X|_]) :- !.
 cekAnggota(X, [_|T]) :- cekAnggota(X, T).
 
+hurufBesar(Char) :-
+    char_code(Char, Code),
+    Code >= 65, Code =< 90.
+
+hurufKecil(Char) :-
+    char_code(Char, Code),
+    Code >= 97, Code =< 122.
+
+toLower(Char, Lower) :-
+    char_code(Char, Code),
+    Code >= 65, Code =< 90, !,
+    LowerCode is Code + 32,
+    char_code(Lower, LowerCode).
+toLower(Char, Char).
+
+charListToLower([], []).
+charListToLower([H|T], [HL|TL]) :-
+    toLower(H, HL),
+    charListToLower(T, TL).
+
+atomToLower(Atom, AtomLower) :-
+    atom_chars(Atom, Chars),
+    charListToLower(Chars, CharsLower),
+    atom_chars(AtomLower, CharsLower).
+
 ambilSatuDariTumpukan(Pemain, kartu(W,J)) :-
     tumpukan_kartu([kartu(W,J)|Sisa]),
     retract(tumpukan_kartu(_)),
@@ -67,7 +92,10 @@ nextTurn :-
     G1 is G + 1,
     assertz(giliranKe(G1)),
     giliran([Berikutnya|_]),
+    nl,
+    write('----------------------------------------------------------------'), nl,
     write('Giliran '), write(Berikutnya), write('.'), nl,
+    write('----------------------------------------------------------------'), nl,
     godsHand.
 
 bisaDimainkan(hitam, _) :- !.
@@ -79,26 +107,27 @@ bisaDimainkan(_, Jenis) :-
 
 mainkanKartu(_) :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 mainkanKartu(_) :-
     penantangWDF(PemainWDF),
     PemainWDF \= none, !,
-    write('Aksi ditolak! Kamu sedang ditargetkan WDF. Silakan ketik tantang. atau ambilKartu. (untuk menyerah).'), nl.
+    write('[!] Aksi ditolak! Kamu sedang ditargetkan WDF.'), nl,
+    write('    Silakan ketik tantang. atau ambilKartu. (untuk menyerah).'), nl.
 
 mainkanKartu(N) :-
     giliran([Pemain|_]),
     kartudiTangan(Pemain, TanganPemain),
     hitungPanjang(TanganPemain, JumlahKartu),
     (N < 1 ; N > JumlahKartu), !,
-    write('Nomor kartu tidak valid.'), nl.
+    write('[!] Nomor kartu tidak valid.'), nl.
 
 mainkanKartu(N) :-
     giliran([Pemain|_]),
     kartudiTangan(Pemain, TanganPemain),
     ambilIndex(N, TanganPemain, kartu(Warna, Jenis)),
     \+ bisaDimainkan(Warna, Jenis), !,
-    write('Kartu '), write(Warna), write('-'), write(Jenis),
+    write('[!] Kartu '), write(Warna), write('-'), write(Jenis),
     write(' tidak bisa dimainkan sekarang.'), nl.
 
 mainkanKartu(N) :-
@@ -146,7 +175,7 @@ mainkanKartu(N) :-
 
 ambilKartu :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 ambilKartu :-
     penantangWDF(PemainWDF),
@@ -170,18 +199,19 @@ ambilKartu :-
 
 tantang :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 tantang :-
     penantangWDF(none), !,
-    write('Tidak ada yang bisa ditantang sekarang.'), nl.
+    write('[!] Tidak ada yang bisa ditantang sekarang.'), nl.
 
 tantang :-
     penantangWDF(PemainWDF),
     giliran([Penantang|_]),
     statusBluffWDF(Status),
     (Status = jujur ->
-        write('Tantangan gagal! '), write(PemainWDF), write(' bermain jujur karena tidak punya kartu valid saat melempar WDF.'), nl,
+        write('Tantangan gagal! '), write(PemainWDF),
+        write(' bermain jujur karena tidak punya kartu valid saat melempar WDF.'), nl,
         write(Penantang), write(' mengambil 6 kartu penalti (4 kartu WDF + 2 denda) dan kehilangan gilirannya.'), nl,
         ambilNKartuDariTumpukan(Penantang, 6),
         retract(penantangWDF(_)),
@@ -190,7 +220,8 @@ tantang :-
         assertz(sudahMainKartu(true)),
         nextTurn
     ;
-        write('Tantangan berhasil! '), write(PemainWDF), write(' curang karena diam-diam masih punya kartu valid!'), nl,
+        write('Tantangan berhasil! '), write(PemainWDF),
+        write(' curang karena diam-diam masih punya kartu valid!'), nl,
         write(PemainWDF), write(' dihukum mengambil 4 kartu.'), nl,
         ambilNKartuDariTumpukan(PemainWDF, 4),
         retract(penantangWDF(_)),
@@ -200,14 +231,14 @@ tantang :-
 
 uni(_) :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 uni(_) :-
     giliran([Pemain|_]),
     kartudiTangan(Pemain, Tangan),
     hitungPanjang(Tangan, Jumlah),
     Jumlah =\= 2, !,
-    write('uni hanya bisa dipakai saat kamu punya tepat 2 kartu.'), nl.
+    write('[!] uni hanya bisa dipakai saat kamu punya tepat 2 kartu.'), nl.
 
 uni(N) :-
     giliran([Pemain|_]),
@@ -221,39 +252,27 @@ uni(N) :-
     write(Pemain), write(' menyerukan UNI!'), nl,
     mainkanKartu(N).
 
-hurufBesar(Char) :-
-    char_code(Char, Code),
-    Code >= 65, Code =< 90.
-
-hurufKecil(Char) :-
-    char_code(Char, Code),
-    Code >= 97, Code =< 122.
-
-toLower(Char, Lower) :-
-    char_code(Char, Code),
-    Code >= 65, Code =< 90, !,
-    LowerCode is Code + 32,
-    char_code(Lower, LowerCode).
-toLower(Char, Char).
-
-charListToLower([], []).
-charListToLower([H|T], [HL|TL]) :-
-    toLower(H, HL),
-    charListToLower(T, TL).
-
-atomToLower(Atom, AtomLower) :-
-    atom_chars(Atom, Chars),
-    charListToLower(Chars, CharsLower),
-    atom_chars(AtomLower, CharsLower).
+tangkap(_) :-
+    sudahMainKartu(true), !,
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 tangkap(NamaPemain) :-
     atom_chars(NamaPemain, [H|_]),
     \+ hurufBesar(H),
     \+ hurufKecil(H), !,
-    write('Nama pemain tidak valid. Contoh: tangkap(william). atau tangkap(razi).'), nl.
+    write('[!] Nama pemain tidak valid.'), nl,
+    write('    Contoh: tangkap(\'William\').'), nl.
+
+tangkap(NamaPemain) :-
+    atom_chars(NamaPemain, [H|_]),
+    \+ hurufBesar(H), !,
+    write('[!] Nama pemain harus diawali huruf kapital.'), nl,
+    write('    Contoh: tangkap(\'William\').'), nl.
 
 tangkap(NamaPemain) :-
     giliran([Penangkap|_]),
+    retract(sudahMainKartu(_)),
+    assertz(sudahMainKartu(true)),
     (kartudiTangan(NamaPemain, _) ->
         NamaTarget = NamaPemain
     ;
@@ -283,30 +302,32 @@ tangkap(NamaPemain) :-
     atomToLower(NamaPemain, NamaLower),
     \+ kartudiTangan(NamaPemain, _),
     \+ kartudiTangan(NamaLower, _), !,
-    write('Pemain tidak ditemukan. Pastikan nama sudah benar.'), nl.
+    write('[!] Pemain tidak ditemukan. Pastikan nama sudah benar.'), nl,
+    retract(sudahMainKartu(_)),
+    assertz(sudahMainKartu(false)).
 
 sembunyikanKartu(_) :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 sembunyikanKartu(_) :-
     giliran([Pemain|_]),
     kartudiTangan(Pemain, Tangan),
     hitungPanjang(Tangan, Jumlah),
     Jumlah =< 1, !,
-    write('Tidak bisa menyembunyikan kartu saat hanya punya 1 kartu.'), nl.
+    write('[!] Tidak bisa menyembunyikan kartu saat hanya punya 1 kartu.'), nl.
 
 sembunyikanKartu(_) :-
     giliran([Pemain|_]),
     kartuTersembunyi(Pemain, _), !,
-    write('Kamu sudah punya kartu yang sedang disembunyikan.'), nl.
+    write('[!] Kamu sudah punya kartu yang sedang disembunyikan.'), nl.
 
 sembunyikanKartu(N) :-
     giliran([Pemain|_]),
     kartudiTangan(Pemain, Tangan),
     hitungPanjang(Tangan, Jumlah),
     (N < 1 ; N > Jumlah), !,
-    write('Nomor kartu tidak valid.'), nl.
+    write('[!] Nomor kartu tidak valid.'), nl.
 
 sembunyikanKartu(N) :-
     giliran([Pemain|_]),
@@ -320,12 +341,12 @@ sembunyikanKartu(N) :-
 
 tampilkanKartu :-
     sudahMainKartu(true), !,
-    write('Kamu sudah melakukan aksi utama di giliran ini.'), nl.
+    write('[!] Kamu sudah melakukan aksi utama di giliran ini.'), nl.
 
 tampilkanKartu :-
     giliran([Pemain|_]),
     \+ kartuTersembunyi(Pemain, _), !,
-    write('Kamu tidak sedang menyembunyikan kartu apapun.'), nl.
+    write('[!] Kamu tidak sedang menyembunyikan kartu apapun.'), nl.
 
 tampilkanKartu :-
     giliran([Pemain|_]),
@@ -338,32 +359,41 @@ tampilkanKartu :-
 
 lihatCommand :-
     sudahMainKartu(Status), nl,
-    write('Aksi utama yang tersedia:'), nl,
+    write('================================================================'), nl,
+    write('                     DAFTAR AKSI                               '), nl,
+    write('================================================================'), nl,
+    write('Aksi utama (hanya 1x per giliran):'), nl,
     (Status = false ->
-        write('1. mainkanKartu(N)'), nl,
-        write('2. ambilKartu'), nl,
-        write('3. tantang'), nl,
-        write('4. uni(N)'), nl,
-        write('5. tangkap(namaPemain)'), nl,
-        write('6. sembunyikanKartu(N)'), nl,
-        write('7. tampilkanKartu'), nl
+        write('  1. mainkanKartu(N)      - Mainkan kartu ke-N'), nl,
+        write('  2. ambilKartu           - Ambil 1 kartu dari deck'), nl,
+        write('  3. tantang              - Tantang Wild Draw Four'), nl,
+        write('  4. uni(N)               - Seru UNI lalu mainkan kartu N'), nl,
+        write('  5. tangkap(NamaPemain)  - Tangkap pemain lupa UNI'), nl,
+        write('  6. sembunyikanKartu(N)  - Sembunyikan kartu ke-N'), nl,
+        write('  7. tampilkanKartu       - Tampilkan kartu tersembunyi'), nl
     ;
-        write('(sudah digunakan pada giliran ini)'), nl
-    ), nl,
-    write('Aksi pendukung yang tersedia:'), nl,
-    write('1. lihatCommand'), nl,
-    write('2. lihatKartu'), nl,
-    write('3. cekInfo'), nl.
+        write('  (sudah digunakan pada giliran ini)'), nl
+    ),
+    nl,
+    write('Aksi pendukung (bebas berapa kali):'), nl,
+    write('  1. lihatCommand         - Lihat daftar aksi ini'), nl,
+    write('  2. lihatKartu           - Lihat kartu di tangan'), nl,
+    write('  3. cekInfo              - Lihat info permainan'), nl,
+    write('================================================================'), nl.
 
 lihatKartu :-
     giliran([Pemain|_]),
+    nl,
+    write('================================================================'), nl,
     write('Berikut kartu yang anda miliki.'), nl,
+    write('================================================================'), nl,
     kartudiTangan(Pemain, Tangan),
-    cetakKartuDenganStatus(Tangan, 1, Pemain).
+    cetakKartuDenganStatus(Tangan, 1, Pemain),
+    write('================================================================'), nl.
 
 cetakKartuDenganStatus([], _, _).
 cetakKartuDenganStatus([kartu(W,J)|T], N, Pemain) :-
-    write(N), write('. '), write(W), write('-'), write(J),
+    write('  '), write(N), write('. '), write(W), write('-'), write(J),
     (kartuTersembunyi(Pemain, kartu(W,J)) -> write(' (disembunyikan)') ; true),
     nl,
     N1 is N + 1,
@@ -371,11 +401,18 @@ cetakKartuDenganStatus([kartu(W,J)|T], N, Pemain) :-
 
 cekInfo :-
     kartuTeratas(W, J),
-    write('Kartu discard top: '), write(W), write('-'), write(J), write('.'), nl, nl,
+    nl,
+    write('================================================================'), nl,
+    write('                   INFO PERMAINAN                              '), nl,
+    write('================================================================'), nl,
+    write('Kartu discard top : '), write(W), write('-'), write(J), write('.'), nl,
+    nl,
     giliran(ListPemain),
-    write('Urutan pemain: '),
-    cetakUrutan(ListPemain), nl, nl,
-    cetakInfoPemain(ListPemain, 1).
+    write('Urutan pemain     : '),
+    cetakUrutan(ListPemain), nl,
+    write('----------------------------------------------------------------'), nl,
+    cetakInfoPemain(ListPemain, 1),
+    write('================================================================'), nl.
 
 cetakUrutan([X]) :- write(X), nl, !.
 cetakUrutan([H|T]) :- write(H), write(' - '), cetakUrutan(T).
@@ -384,7 +421,8 @@ cetakInfoPemain([], _).
 cetakInfoPemain([P|T], N) :-
     kartudiTangan(P, Tangan),
     hitungPanjang(Tangan, Jumlah),
-    write('Nama pemain '), write(N), write(': '), write(P), nl,
-    write('Jumlah kartu : '), write(Jumlah), nl, nl,
+    write('Nama pemain '), write(N), write(' : '), write(P), nl,
+    write('Jumlah kartu    : '), write(Jumlah), nl,
+    nl,
     N1 is N + 1,
     cetakInfoPemain(T, N1).

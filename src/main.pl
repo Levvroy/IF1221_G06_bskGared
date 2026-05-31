@@ -34,7 +34,7 @@ printMenu :-
     write('  +--------------------------------------------+'), nl,
     write('  |  startGame.  ->  Mulai permainan baru      |'), nl,
     write('  |  loadGame.   ->  Lanjutkan permainan       |'), nl,
-    write('  |  help.       ->  Panduan perintah          |'), nl,
+    write('  |  bantuan.    ->  Panduan perintah          |'), nl,
     write('  |  exit.       ->  Keluar dari program       |'), nl,
     write('  +--------------------------------------------+'), nl,
     nl,
@@ -50,12 +50,11 @@ printHelp :-
     write('  |   ambilKartu            - Ambil 1 kartu dari deck          |'), nl,
     write('  |   tantang               - Tantang Wild Draw Four           |'), nl,
     write('  |   uni(N)                - Seru UNI lalu mainkan kartu N    |'), nl,
+    write('  |   tangkap(NamaPemain)   - Tangkap pemain lupa UNI          |'), nl,
     write('  |   sembunyikanKartu(N)   - Sembunyikan kartu ke-N           |'), nl,
     write('  |   tampilkanKartu        - Tampilkan kartu tersembunyi      |'), nl,
     write('  +------------------------------------------------------------+'), nl,
     write('  | AKSI PENDUKUNG (bebas berapa kali):                        |'), nl,
-    write('  |   tangkap(Nama)         - Tangkap pemain lupa UNI          |'), nl,
-    write('  |   contoh: tangkap(william)                                 |'), nl,
     write('  |   lihatCommand          - Lihat daftar aksi tersedia       |'), nl,
     write('  |   lihatKartu            - Lihat kartu di tangan            |'), nl,
     write('  |   cekInfo               - Lihat info permainan             |'), nl,
@@ -68,7 +67,7 @@ printHelp :-
     nl.
 
 printSeparator :-
-    write('+------------------------------------------------------------+'), nl.
+    write('================================================================'), nl.
 
 printGoodbye :-
     nl,
@@ -81,7 +80,7 @@ printGoodbye :-
 printUnknownCommand :-
     nl,
     write('  [!] Perintah tidak dikenali.'), nl,
-    write('      Ketik help. untuk melihat daftar perintah.'), nl,
+    write('      Ketik bantuan. untuk melihat daftar perintah.'), nl,
     nl.
 
 main :-
@@ -107,7 +106,7 @@ handleCommand(loadGame) :- !,
     printSeparator,
     gameLoop.
 
-handleCommand(help) :- !,
+handleCommand(bantuan) :- !,
     printHelp,
     mainLoop.
 

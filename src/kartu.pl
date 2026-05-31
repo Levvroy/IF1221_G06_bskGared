@@ -63,28 +63,6 @@ reverse_helper([], Acc, Acc).
 reverse_helper([Head|Tail], Acc, Reversed) :-
     reverse_helper(Tail, [Head|Acc], Reversed).
 
-cek_semua_satu_kartu([]).
-cek_semua_satu_kartu([P|T]) :-
-    kartudiTangan(P, Tangan),
-    hitungPanjang(Tangan, Len),
-    Len =< 1,
-    cek_semua_satu_kartu(T).
-
-pilih_giver_receiver(ListPemain, Len, Giver, Receiver) :-
-    MaxIdx1 is Len + 1,
-    random(1, MaxIdx1, Idx1),
-    ambilIndex(Idx1, ListPemain, Giver),
-    hapusIndex(Idx1, ListPemain, SisaPemain),
-    kartudiTangan(Giver, TanganGiver),
-    hitungPanjang(TanganGiver, LenTangan),
-    ( LenTangan =:= 0 ->
-        pilih_giver_receiver(ListPemain, Len, Giver, Receiver)
-    ;
-        LenSisa is Len,
-        random(1, LenSisa, Idx2),
-        ambilIndex(Idx2, SisaPemain, Receiver)
-    ).
-
 efek_kartu(Jenis) :- integer(Jenis), !.
 
 efek_kartu(skip) :-
@@ -137,7 +115,8 @@ efek_kartu(wildDrawFour) :-
     assertz(warnaActive(WarnaBaru)),
     write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
     write('Peringatan: '), write(PemainBerikutnya), write(' sedang ditargetkan WDF!'), nl,
-    write('Pada gilirannya, '), write(PemainBerikutnya), write(' wajib memanggil tantang. atau ambilKartu. (terima 4 penalti).'), nl, !.
+    write('Pada gilirannya, '), write(PemainBerikutnya),
+    write(' wajib memanggil tantang. atau ambilKartu. (terima 4 penalti).'), nl, !.
 efek_kartu(wildDrawFour) :-
     write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wildDrawFour).
@@ -173,11 +152,34 @@ efek_kartu(mimic) :-
         efekMimic(wild)
     ).
 
+cek_semua_satu_kartu([]).
+cek_semua_satu_kartu([P|T]) :-
+    kartudiTangan(P, Tangan),
+    hitungPanjang(Tangan, Len),
+    Len =< 1,
+    cek_semua_satu_kartu(T).
+
+pilih_giver_receiver(ListPemain, Len, Giver, Receiver) :-
+    MaxIdx is Len + 1,
+    random(1, MaxIdx, Idx1),
+    ambilIndex(Idx1, ListPemain, Giver),
+    kartudiTangan(Giver, TanganGiver),
+    hitungPanjang(TanganGiver, LenTangan),
+    (LenTangan =:= 0 ->
+        pilih_giver_receiver(ListPemain, Len, Giver, Receiver)
+    ;
+        hapusIndex(Idx1, ListPemain, SisaPemain),
+        hitungPanjang(SisaPemain, LenSisa),
+        MaxIdxR is LenSisa + 1,
+        random(1, MaxIdxR, Idx2),
+        ambilIndex(Idx2, SisaPemain, Receiver)
+    ).
+
 godsHand :-
     random(1, 101, Peluang),
-    ( Peluang =< 10 ->
+    (Peluang =< 10 ->
         giliran(ListPemain),
-        ( cek_semua_satu_kartu(ListPemain) ->
+        (cek_semua_satu_kartu(ListPemain) ->
             true
         ;
             hitungPanjang(ListPemain, JumlahPemain),
@@ -195,21 +197,13 @@ godsHand :-
             retract(kartudiTangan(Receiver, _)),
             assertz(kartudiTangan(Receiver, TanganReceiverBaru)),
             KartuDipindah = kartu(Warna, Jenis),
-            nl, write('Tuhan telah berkehendak.'), nl,
+            nl,
+            write('================================================================'), nl,
+            write('Tuhan telah berkehendak.'), nl,
             write('Kartu '), write(Warna), write('-'), write(Jenis),
-            write(' milik '), write(Giver), write(' berpindah ke tangan '),
-            write(Receiver), write('!'), nl,
-            ListPemain = [PemainSekarang | SisaAntrean],
-            append_element(SisaAntrean, PemainSekarang, AntreanBaru),
-            retract(giliran(_)),
-            assertz(giliran(AntreanBaru)),
-            retractall(sudahMainKartu(_)),
-            assertz(sudahMainKartu(false)),
-            retract(giliranKe(G)),
-            G1 is G + 1,
-            assertz(giliranKe(G1)),
-            AntreanBaru = [PemainBerikutnya | _],
-            nl, write('Giliran '), write(PemainBerikutnya), write('.'), nl
+            write(' milik '), write(Giver),
+            write(' berpindah ke tangan '), write(Receiver), write('!'), nl,
+            write('================================================================'), nl
         )
     ;
         true
