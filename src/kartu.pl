@@ -30,13 +30,24 @@ kartu(hitam, wildDrawFour).
 kartu(hitam, mimic).
 
 valid_lempar(Warna, Jenis) :-
+    Jenis \= drawTwo,
     warnaActive(WarnaSekarang),
     kartuTeratas(_, JenisTeratas),
     (Warna = WarnaSekarang ; Jenis = JenisTeratas), !.
 
+valid_lempar(Warna, drawTwo) :-
+    kartuTeratas(_, JenisTeratas),
+    JenisTeratas \= drawTwo,
+    warnaActive(WarnaSekarang),
+    (Warna = WarnaSekarang ; JenisTeratas = drawTwo), !.
+
 valid_lempar(hitam, wild) :-
     kartuTeratas(_, JenisTeratas),
     JenisTeratas \= wild,
+    JenisTeratas \= wildDrawFour, !.
+
+valid_lempar(hitam, wildDrawFour) :-
+    kartuTeratas(_, JenisTeratas),
     JenisTeratas \= wildDrawFour, !.
 
 valid_lempar(hitam, mimic) :- !.

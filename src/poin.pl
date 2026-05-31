@@ -1,14 +1,15 @@
 :- dynamic(kartudiTangan/2).
 
+nilaiKartu(0, 1) :- !.
 nilaiKartu(Jenis, Nilai) :-
     integer(Jenis), !, Nilai = Jenis.
 
-nilaiKartu(skip,10) :- !.
-nilaiKartu(reverse,10) :- !.
-nilaiKartu(drawTwo,10) :- !.
-nilaiKartu(wild,20) :- !.
-nilaiKartu(wildDrawFour,20) :- !.
-nilaiKartu(mimic,20).
+nilaiKartu(skip, 10) :- !.
+nilaiKartu(reverse, 10) :- !.
+nilaiKartu(drawTwo, 10) :- !.
+nilaiKartu(wild, 20) :- !.
+nilaiKartu(wildDrawFour, 20) :- !.
+nilaiKartu(mimic, 20).
 
 totalPoinKartu([], 0).
 totalPoinKartu([kartu(_, Jenis) | Sisa], Total) :-
@@ -31,12 +32,7 @@ printNilaiList([kartu(_, J) | T]) :-
 printDetailPoin(Pemain) :-
     kartudiTangan(Pemain, Tangan),
     (   Tangan = []
-
-    /* Kondisi jika pemain sudah tidak memiliki kartu  */
     ->  write(Pemain), write(': kartu habis = 0 poin')
-
-    /* Kondisi jika pemain masih memiliki kartu di tangan */
-
     ;   write(Pemain), write(': '),
         printKartuList(Tangan), write(' = '),
         printNilaiList(Tangan), write(' = '),

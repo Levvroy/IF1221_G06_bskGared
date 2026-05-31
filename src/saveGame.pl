@@ -4,8 +4,6 @@
 :- dynamic(warnaActive/1).
 :- dynamic(statusUni/1).
 :- dynamic(arahPermainan/1).
-:- dynamic(kartuTersembunyi/2).
-:- dynamic(aksiTerakhir/4).
 
 saveGame :-
     write('Masukkan nama file penyimpanan: '),
@@ -23,54 +21,33 @@ tulisSemuaData :-
     tulisWarnaAktif,
     tulisArahPermainan,
     tulisStatusUni,
-    tulisAksiTerakhir,
-    tulisKartuTersembunyi,
     tulisKartuSemuaPemain.
 
 tulisUrutanPemain :-
     giliran(ListPemain),
     write('urutan_pemain:'),
-    tulisListPemain(ListPemain), nl.
+    tulisListPemain(ListPemain), write('.'), nl.
 
 tulisGiliran :-
     giliran([Sekarang|_]),
-    write('giliran:'), writeq(Sekarang), nl.
+    write('giliran:'), writeq(Sekarang), write('.'), nl.
 
 tulisDiscardTop :-
     kartuTeratas(W, J),
-    write('discard_top:'), write(W), write('-'), write(J), nl.
+    write('discard_top:'), write(W), write('-'), write(J), write('.'), nl.
 
 tulisWarnaAktif :-
     warnaActive(Warna),
-    write('warna_aktif:'), write(Warna), nl.
+    write('warna_aktif:'), write(Warna), write('.'), nl.
 
 tulisArahPermainan :-
     arahPermainan(Arah),
-    write('arah_permainan:'), write(Arah), nl.
+    write('arah_permainan:'), write(Arah), write('.'), nl.
 
 tulisStatusUni :-
     statusUni(ListUni),
     write('status_UNI:'),
-    tulisListPemain(ListUni), nl.
-
-tulisAksiTerakhir :-
-    (aksiTerakhir(W, J, Pemain, _) ->
-        write('kartu_aksi_terakhir:'),
-        write(W), write('-'), write(J), write('-'), writeq(Pemain), nl
-    ; true).
-
-tulisKartuTersembunyi :-
-    \+ kartuTersembunyi(_, _), !.
-tulisKartuTersembunyi :-
-    giliran(ListPemain),
-    tulisTersembunyiPerPemain(ListPemain).
-
-tulisTersembunyiPerPemain([]).
-tulisTersembunyiPerPemain([P|Sisa]) :-
-    (kartuTersembunyi(P, kartu(W,J)) ->
-        write('kartu_tersembunyi:'), writeq(P), write('-'), write(W), write('-'), write(J), nl
-    ; true),
-    tulisTersembunyiPerPemain(Sisa).
+    tulisListPemain(ListUni), write('.'), nl.
 
 tulisKartuSemuaPemain :-
     giliran(ListPemain),
@@ -80,7 +57,7 @@ tulisKartuPerPemain([]).
 tulisKartuPerPemain([P|Sisa]) :-
     kartudiTangan(P, Tangan),
     write('kartu('), writeq(P), write('):'),
-    tulisListKartu(Tangan), nl,
+    tulisListKartu(Tangan), write('.'), nl,
     tulisKartuPerPemain(Sisa).
 
 tulisListPemain(List) :-

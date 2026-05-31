@@ -13,7 +13,6 @@
 :- dynamic(giliranKe/1).
 :- dynamic(giliranAktifTemp/1).
 
-
 gabungList([], L, L).
 gabungList([H|T], L2, [H|Hasil]) :- gabungList(T, L2, Hasil).
 
@@ -62,6 +61,20 @@ pecahPertama(Sep, [H|T], [H|R1], R2) :- pecahPertama(Sep, T, R1, R2).
 removeLastCode([_], []) :- !.
 removeLastCode([H|T], [H|R]) :- removeLastCode(T, R).
 
+removeDotSuffix(Codes, Clean) :-
+    (Codes = [] -> Clean = []
+    ;
+        last_code(Codes, Last),
+        (Last =:= 46 -> 
+            removeLastCode(Codes, Clean)
+        ;
+            Clean = Codes
+        )
+    ).
+
+last_code([X], X) :- !.
+last_code([_|T], X) :- last_code(T, X).
+
 stripOuterQuotes([39|Rest], Clean) :- removeLastCode(Rest, Clean), !.
 stripOuterQuotes(Codes, Codes).
 
@@ -90,21 +103,31 @@ splitDash(Atom, W, J) :-
     (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)).
 
 parseListAtom(Atom, Hasil) :-
-    atom_codes(Atom, [91|Rest]),
-    removeLastCode(Rest, InnerCodes),
-    (InnerCodes = [] -> Hasil = []
+    atom_codes(Atom, FullCodes),
+    removeDotSuffix(FullCodes, NoDotCodes),
+    (NoDotCodes = [91|Rest] ->
+        removeLastCode(Rest, InnerCodes),
+        (InnerCodes = [] -> Hasil = []
+        ;
+            pecahPada(44, InnerCodes, Parts),
+            mapCodesToAtoms(Parts, Hasil)
+        )
     ;
-        pecahPada(44, InnerCodes, Parts),
-        mapCodesToAtoms(Parts, Hasil)
+        Hasil = []
     ).
 
 parseListKartu(Atom, Hasil) :-
-    atom_codes(Atom, [91|Rest]),
-    removeLastCode(Rest, InnerCodes),
-    (InnerCodes = [] -> Hasil = []
+    atom_codes(Atom, FullCodes),
+    removeDotSuffix(FullCodes, NoDotCodes),
+    (NoDotCodes = [91|Rest] ->
+        removeLastCode(Rest, InnerCodes),
+        (InnerCodes = [] -> Hasil = []
+        ;
+            pecahPada(44, InnerCodes, Parts),
+            mapCodesToKartu(Parts, Hasil)
+        )
     ;
-        pecahPada(44, InnerCodes, Parts),
-        mapCodesToKartu(Parts, Hasil)
+        Hasil = []
     ).
 
 baca_baris_loop(Stream) :-
@@ -122,7 +145,8 @@ baca_satu_baris(Stream, Acc, Hasil) :-
     ; append_element(Acc, Code, NewAcc), baca_satu_baris(Stream, NewAcc, Hasil)).
 
 parse_baris_ascii(KarakterList) :-
-    split_key_value(KarakterList, KeyCodes, ValueCodes),
+    removeDotSuffix(KarakterList, CleanList),
+    split_key_value(CleanList, KeyCodes, ValueCodes),
     atom_codes(Key, KeyCodes),
     stripOuterQuotes(ValueCodes, CleanValueCodes),
     atom_codes(ValueAtom, CleanValueCodes),
@@ -153,26 +177,6 @@ restore_fakta_ascii(status_UNI, Value) :- !,
     parseListAtom(Value, List),
     retractall(statusUni(_)), assertz(statusUni(List)).
 
-restore_fakta_ascii(kartu_tersembunyi, Value) :- !,
-    atom_codes(Value, Codes),
-    pecahPada(45, Codes, [PCodes, WCodes, JCodes]),
-    stripOuterQuotes(PCodes, CleanPCodes),
-    atom_codes(P, CleanPCodes),
-    atom_codes(W, WCodes),
-    (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)),
-    retractall(kartuTersembunyi(P, _)),
-    assertz(kartuTersembunyi(P, kartu(W, J))).
-
-restore_fakta_ascii(kartu_aksi_terakhir, Value) :- !,
-    atom_codes(Value, Codes),
-    pecahPada(45, Codes, [WCodes, JCodes, PCodes]),
-    atom_codes(W, WCodes),
-    (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)),
-    stripOuterQuotes(PCodes, CleanPCodes),
-    atom_codes(Pemain, CleanPCodes),
-    retractall(aksiTerakhir(_,_,_,_)),
-    assertz(aksiTerakhir(W, J, Pemain, 0)).
-
 restore_fakta_ascii(Key, Value) :-
     atom_codes(Key, KeyCodes),
     atom_codes('kartu(', PrefixCodes),
@@ -185,7 +189,6 @@ restore_fakta_ascii(Key, Value) :-
     assertz(kartudiTangan(NamaPemain, ListKartu)).
 
 restore_fakta_ascii(_, _).
-
 restoreGiliran :-
     (giliranAktifTemp(GiliranAktif) ->
         giliran(UrutanPemain),
@@ -195,10 +198,12 @@ restoreGiliran :-
     ; true).
 
 restoreStateTetap :-
-    retractall(penantangWDF(_)),   assertz(penantangWDF(none)),
-    retractall(sudahMainKartu(_)), assertz(sudahMainKartu(false)),
-    retractall(statusBluffWDF(_)), assertz(statusBluffWDF(jujur)),
-    retractall(giliranKe(_)),      assertz(giliranKe(1)).
+    retractall(penantangWDF(_)),    assertz(penantangWDF(none)),
+    retractall(sudahMainKartu(_)),  assertz(sudahMainKartu(false)),
+    retractall(statusBluffWDF(_)),  assertz(statusBluffWDF(jujur)),
+    retractall(giliranKe(_)),       assertz(giliranKe(1)),
+    retractall(kartuTersembunyi(_,_)),
+    retractall(aksiTerakhir(_,_,_,_)).
 
 restoreTumpukan :-
     giliran(ListPemain),
