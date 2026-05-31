@@ -66,21 +66,23 @@ reverse_helper([Head|Tail], Acc, Reversed) :-
 cek_semua_satu_kartu([]).
 cek_semua_satu_kartu([P|T]) :-
     kartudiTangan(P, Tangan),
-    hitungPanjang(Tangan, Len), 
+    hitungPanjang(Tangan, Len),
     Len =< 1,
     cek_semua_satu_kartu(T).
 
 pilih_giver_receiver(ListPemain, Len, Giver, Receiver) :-
-    random(0, Len, Idx1),
-    ambil_elemen_ke(Idx1, ListPemain, Giver, SisaPemain), 
+    MaxIdx1 is Len + 1,
+    random(1, MaxIdx1, Idx1),
+    ambilIndex(Idx1, ListPemain, Giver),
+    hapusIndex(Idx1, ListPemain, SisaPemain),
     kartudiTangan(Giver, TanganGiver),
     hitungPanjang(TanganGiver, LenTangan),
     ( LenTangan =:= 0 ->
-        pilih_giver_receiver(ListPemain, Len, Giver, Receiver) 
+        pilih_giver_receiver(ListPemain, Len, Giver, Receiver)
     ;
-        LenSisa is Len - 1,
-        random(0, LenSisa, Idx2),
-        ambil_elemen_ke(Idx2, SisaPemain, Receiver, _)
+        LenSisa is Len,
+        random(1, LenSisa, Idx2),
+        ambilIndex(Idx2, SisaPemain, Receiver)
     ).
 
 efek_kartu(Jenis) :- integer(Jenis), !.
@@ -126,7 +128,7 @@ efek_kartu(wild) :-
     efek_kartu(wild).
 
 efek_kartu(wildDrawFour) :-
-    giliran([PemainSekarang, PemainBerikutnya|_]),
+    giliran([_, PemainBerikutnya|_]),
     write('EFEK AKTIF: Kartu Wild Draw Four!'), nl,
     write('Masukkan warna aktif baru (merah/kuning/hijau/biru) diakhiri titik: '),
     read(WarnaBaru),
@@ -135,7 +137,7 @@ efek_kartu(wildDrawFour) :-
     assertz(warnaActive(WarnaBaru)),
     write('Warna permainan berhasil diubah menjadi '), write(WarnaBaru), write('.'), nl,
     write('Peringatan: '), write(PemainBerikutnya), write(' sedang ditargetkan WDF!'), nl,
-    write('Pada gilirannya, '), write(PemainBerikutnya), write(' wajib memanggil "tantang." atau "ambilKartu." (terima 4 penalti).'), nl, !.
+    write('Pada gilirannya, '), write(PemainBerikutnya), write(' wajib memanggil tantang. atau ambilKartu. (terima 4 penalti).'), nl, !.
 efek_kartu(wildDrawFour) :-
     write('Gagal, warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     efek_kartu(wildDrawFour).
@@ -150,8 +152,6 @@ pilihWarnaAktif :-
 pilihWarnaAktif :-
     write('Warna tidak valid. Gunakan huruf kecil dan akhiri titik.'), nl,
     pilihWarnaAktif.
-
-%penambahan efek kartu mimic
 
 efekMimic(wild) :- !, efek_kartu(wild).
 efekMimic(wildDrawFour) :- !, efek_kartu(wildDrawFour).
@@ -174,37 +174,43 @@ efek_kartu(mimic) :-
     ).
 
 godsHand :-
-    giliran(ListPemain),
-    
-    ( cek_semua_satu_kartu(ListPemain) ->
-        nl, write('Gagal! God''s Hand dibatalkan karena seluruh pemain hanya memiliki 1 kartu.'), nl
-    ;
-        hitungPanjang(ListPemain, JumlahPemain),
-        pilih_giver_receiver(ListPemain, JumlahPemain, Giver, Receiver),
-        kartudiTangan(Giver, TanganGiver),
-        hitungPanjang(TanganGiver, JumlahKartuGiver),
-        random(0, JumlahKartuGiver, IdxKartu),
-        ambil_elemen_ke(IdxKartu, TanganGiver, KartuDipindah, TanganGiverBaru),
-        kartudiTangan(Receiver, TanganReceiver),
-        append_element(TanganReceiver, KartuDipindah, TanganReceiverBaru),
- 
-        retract(kartudiTangan(Giver, _)),
-        assertz(kartudiTangan(Giver, TanganGiverBaru)),
-        retract(kartudiTangan(Receiver, _)),
-        assertz(kartudiTangan(Receiver, TanganReceiverBaru)),
-        
-        KartuDipindah = kartu(Warna, Jenis),
-        nl, write('Tuhan telah berkehendak.'), nl,
-        write('Kartu '), write(Warna), write('-'), write(Jenis), write(' milik '), write(Giver), write(' berpindah ke tangan '), 
-        write(Receiver), write(' !'), nl,
-
-        ListPemain = [PemainSekarang | SisaPemain],
-            append_element(SisaPemain, PemainSekarang, AntreanBaru),
+    random(1, 101, Peluang),
+    ( Peluang =< 10 ->
+        giliran(ListPemain),
+        ( cek_semua_satu_kartu(ListPemain) ->
+            true
+        ;
+            hitungPanjang(ListPemain, JumlahPemain),
+            pilih_giver_receiver(ListPemain, JumlahPemain, Giver, Receiver),
+            kartudiTangan(Giver, TanganGiver),
+            hitungPanjang(TanganGiver, JumlahKartuGiver),
+            MaxKartuIdx is JumlahKartuGiver + 1,
+            random(1, MaxKartuIdx, IdxKartu),
+            ambilIndex(IdxKartu, TanganGiver, KartuDipindah),
+            hapusIndex(IdxKartu, TanganGiver, TanganGiverBaru),
+            kartudiTangan(Receiver, TanganReceiver),
+            append_element(TanganReceiver, KartuDipindah, TanganReceiverBaru),
+            retract(kartudiTangan(Giver, _)),
+            assertz(kartudiTangan(Giver, TanganGiverBaru)),
+            retract(kartudiTangan(Receiver, _)),
+            assertz(kartudiTangan(Receiver, TanganReceiverBaru)),
+            KartuDipindah = kartu(Warna, Jenis),
+            nl, write('Tuhan telah berkehendak.'), nl,
+            write('Kartu '), write(Warna), write('-'), write(Jenis),
+            write(' milik '), write(Giver), write(' berpindah ke tangan '),
+            write(Receiver), write('!'), nl,
+            ListPemain = [PemainSekarang | SisaAntrean],
+            append_element(SisaAntrean, PemainSekarang, AntreanBaru),
             retract(giliran(_)),
             assertz(giliran(AntreanBaru)),
             retractall(sudahMainKartu(_)),
             assertz(sudahMainKartu(false)),
-
+            retract(giliranKe(G)),
+            G1 is G + 1,
+            assertz(giliranKe(G1)),
             AntreanBaru = [PemainBerikutnya | _],
             nl, write('Giliran '), write(PemainBerikutnya), write('.'), nl
+        )
+    ;
+        true
     ).

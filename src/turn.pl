@@ -8,7 +8,7 @@
 :- dynamic(penantangWDF/1).
 :- dynamic(statusBluffWDF/1).
 :- dynamic(arahPermainan/1).
-:- dynamic(kartuTersembunyi/2). %penambahan kartu tersembunyi
+:- dynamic(kartuTersembunyi/2).
 :- dynamic(aksiTerakhir/4).
 :- dynamic(giliranKe/1).
 
@@ -67,7 +67,8 @@ nextTurn :-
     G1 is G + 1,
     assertz(giliranKe(G1)),
     giliran([Berikutnya|_]),
-    write('Giliran '), write(Berikutnya), write('.'), nl.
+    write('Giliran '), write(Berikutnya), write('.'), nl,
+    godsHand.
 
 bisaDimainkan(hitam, _) :- !.
 bisaDimainkan(Warna, _) :-
@@ -83,7 +84,7 @@ mainkanKartu(_) :-
 mainkanKartu(_) :-
     penantangWDF(PemainWDF),
     PemainWDF \= none, !,
-    write('Aksi ditolak! Kamu sedang ditargetkan WDF. Silakan ketik "tantang." atau "ambilKartu." (untuk menyerah).'), nl.
+    write('Aksi ditolak! Kamu sedang ditargetkan WDF. Silakan ketik tantang. atau ambilKartu. (untuk menyerah).'), nl.
 
 mainkanKartu(N) :-
     giliran([Pemain|_]),
@@ -220,35 +221,69 @@ uni(N) :-
     write(Pemain), write(' menyerukan UNI!'), nl,
     mainkanKartu(N).
 
-tangkap(NamaPemain) :-
-    atom_chars(NamaPemain, [H|_]),
-    \+ char_type(H, upper), !,
-    write('Nama pemain harus diawali huruf kapital. Contoh: tangkap(\'William\').'), nl.
+hurufBesar(Char) :-
+    char_code(Char, Code),
+    Code >= 65, Code =< 90.
+
+hurufKecil(Char) :-
+    char_code(Char, Code),
+    Code >= 97, Code =< 122.
+
+toLower(Char, Lower) :-
+    char_code(Char, Code),
+    Code >= 65, Code =< 90, !,
+    LowerCode is Code + 32,
+    char_code(Lower, LowerCode).
+toLower(Char, Char).
+
+charListToLower([], []).
+charListToLower([H|T], [HL|TL]) :-
+    toLower(H, HL),
+    charListToLower(T, TL).
+
+atomToLower(Atom, AtomLower) :-
+    atom_chars(Atom, Chars),
+    charListToLower(Chars, CharsLower),
+    atom_chars(AtomLower, CharsLower).
 
 tangkap(NamaPemain) :-
     atom_chars(NamaPemain, [H|_]),
-    char_type(H, upper),
-    atom_string(NamaPemain, NamaStr),
-    string_lower(NamaStr, NamaLower),
-    atom_string(NamaAtom, NamaLower),
+    \+ hurufBesar(H),
+    \+ hurufKecil(H), !,
+    write('Nama pemain tidak valid. Contoh: tangkap(william). atau tangkap(razi).'), nl.
+
+tangkap(NamaPemain) :-
     giliran([Penangkap|_]),
-    kartudiTangan(NamaAtom, TanganTarget),
+    (kartudiTangan(NamaPemain, _) ->
+        NamaTarget = NamaPemain
+    ;
+        atomToLower(NamaPemain, NamaLower),
+        kartudiTangan(NamaLower, _),
+        NamaTarget = NamaLower
+    ),
+    kartudiTangan(NamaTarget, TanganTarget),
     hitungPanjang(TanganTarget, JumlahKartu),
     statusUni(ListUni),
-    (kartuTersembunyi(NamaAtom, _) ->
-        write('Terdapat kartu yang disembunyikan oleh '), write(NamaAtom), write('.'), nl,
+    (kartuTersembunyi(NamaTarget, _) ->
+        write('Terdapat kartu yang disembunyikan oleh '), write(NamaTarget), write('.'), nl,
         write('Perintah tangkap tidak valid. '), write(Penangkap), write(' mendapatkan 1 kartu penalti.'), nl,
         ambilNKartuDariTumpukan(Penangkap, 1)
     ;
-        (JumlahKartu =:= 1, \+ cekAnggota(NamaAtom, ListUni) ->
-            write('Tertangkap! '), write(NamaAtom), write(' lupa serukan UNI!'), nl,
-            write(NamaAtom), write(' mengambil 2 kartu penalti.'), nl,
-            ambilNKartuDariTumpukan(NamaAtom, 2)
+        (JumlahKartu =:= 1, \+ cekAnggota(NamaTarget, ListUni) ->
+            write('Tertangkap! '), write(NamaTarget), write(' lupa serukan UNI!'), nl,
+            write(NamaTarget), write(' mengambil 2 kartu penalti.'), nl,
+            ambilNKartuDariTumpukan(NamaTarget, 2)
         ;
             write('Tangkapan gagal. '), write(Penangkap), write(' mengambil 1 kartu penalti.'), nl,
             ambilNKartuDariTumpukan(Penangkap, 1)
         )
     ).
+
+tangkap(NamaPemain) :-
+    atomToLower(NamaPemain, NamaLower),
+    \+ kartudiTangan(NamaPemain, _),
+    \+ kartudiTangan(NamaLower, _), !,
+    write('Pemain tidak ditemukan. Pastikan nama sudah benar.'), nl.
 
 sembunyikanKartu(_) :-
     sudahMainKartu(true), !,
@@ -309,16 +344,16 @@ lihatCommand :-
         write('2. ambilKartu'), nl,
         write('3. tantang'), nl,
         write('4. uni(N)'), nl,
-        write('5. sembunyikanKartu(N)'), nl,
-        write('6. tampilkanKartu'), nl
+        write('5. tangkap(namaPemain)'), nl,
+        write('6. sembunyikanKartu(N)'), nl,
+        write('7. tampilkanKartu'), nl
     ;
         write('(sudah digunakan pada giliran ini)'), nl
     ), nl,
     write('Aksi pendukung yang tersedia:'), nl,
-    write('1. tangkap(NamaPemain)'), nl,
-    write('2. lihatCommand'), nl,
-    write('3. lihatKartu'), nl,
-    write('4. cekInfo'), nl.
+    write('1. lihatCommand'), nl,
+    write('2. lihatKartu'), nl,
+    write('3. cekInfo'), nl.
 
 lihatKartu :-
     giliran([Pemain|_]),

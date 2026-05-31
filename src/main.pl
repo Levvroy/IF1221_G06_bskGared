@@ -6,19 +6,24 @@
 :- include('loadGame.pl').
 
 :- initialization(main).
+
 printBanner :-
     nl,
     write('================================================================================'), nl,
-    write('|                              _    _ _   _ _____                              |'), nl,
-    write('|                             | |  | | \ | |_   _|                             |'), nl,
-    write('|                             | |  | |  \| | | |                               |'), nl,
-    write('|                             | |  | | . ` | | |                               |'), nl,
-    write('|                             | |__| | |\  |_| |_                              |'), nl,
-    write('|                              \____/|_| \_|_____|                             |'), nl,
+    write('|                                                                              |'), nl,
+    write('|        UUUU            UUUU   NNNN            NNNN   IIIIIIIIIIIIIIII        |'), nl,
+    write('|        UUUU            UUUU   NNNNNN          NNNN         IIII              |'), nl,
+    write('|        UUUU            UUUU   NNNNNNNN        NNNN         IIII              |'), nl,
+    write('|        UUUU            UUUU   NNNN  NNNN      NNNN         IIII              |'), nl,
+    write('|        UUUU            UUUU   NNNN    NNNN    NNNN         IIII              |'), nl,
+    write('|        UUUU            UUUU   NNNN      NNNN  NNNN         IIII              |'), nl,
+    write('|        UUUU            UUUU   NNNN        NNNNNNNN         IIII              |'), nl,
+    write('|         UUUU          UUUU    NNNN          NNNNNN         IIII              |'), nl,
+    write('|           UUUUUUUUUUUUUU      NNNN            NNNN   IIIIIIIIIIIIIIII        |'), nl,
     write('|                                                                              |'), nl,
     write('================================================================================'), nl,
-    write('|                  Permainan Kartu UNI  -  GNU Prolog Edition                  |'), nl,
-    write('|             IF1221 Logika Komputasional | Kelompok 06 - bskGared             |'), nl,
+    write('|                        Permainan Kartu UNI  -  GNU Prolog                    |'), nl,
+    write('|              IF1221 Logika Komputasional - Kelompok 06 - bskGared            |'), nl,
     write('|                                                                              |'), nl,
     write('================================================================================'), nl.
 
@@ -50,7 +55,7 @@ printHelp :-
     write('  +------------------------------------------------------------+'), nl,
     write('  | AKSI PENDUKUNG (bebas berapa kali):                        |'), nl,
     write('  |   tangkap(Nama)         - Tangkap pemain lupa UNI          |'), nl,
-    write('  |   contoh: tangkap(\'William\')                             |'), nl,
+    write('  |   contoh: tangkap(william)                                 |'), nl,
     write('  |   lihatCommand          - Lihat daftar aksi tersedia       |'), nl,
     write('  |   lihatKartu            - Lihat kartu di tangan            |'), nl,
     write('  |   cekInfo               - Lihat info permainan             |'), nl,
@@ -63,7 +68,7 @@ printHelp :-
     nl.
 
 printSeparator :-
-    write('  +------------------------------------------------------------+'), nl.
+    write('+------------------------------------------------------------+'), nl.
 
 printGoodbye :-
     nl,
@@ -76,7 +81,7 @@ printGoodbye :-
 printUnknownCommand :-
     nl,
     write('  [!] Perintah tidak dikenali.'), nl,
-    write('      Ketik "help." untuk melihat daftar perintah.'), nl,
+    write('      Ketik help. untuk melihat daftar perintah.'), nl,
     nl.
 
 main :-
@@ -123,17 +128,17 @@ gameLoopStep :-
     handleGameCommand(Command),
     gameLoopStep.
 
-handleGameCommand(mainkanKartu(N)) :- !, mainkanKartu(N).
-handleGameCommand(ambilKartu)       :- !, ambilKartu.
-handleGameCommand(tantang)          :- !, tantang.
-handleGameCommand(uni(N))           :- !, uni(N).
+handleGameCommand(mainkanKartu(N))    :- !, mainkanKartu(N).
+handleGameCommand(ambilKartu)          :- !, ambilKartu.
+handleGameCommand(tantang)             :- !, tantang.
+handleGameCommand(uni(N))              :- !, uni(N).
 handleGameCommand(sembunyikanKartu(N)) :- !, sembunyikanKartu(N).
-handleGameCommand(tampilkanKartu)   :- !, tampilkanKartu.
-handleGameCommand(tangkap(Nama))    :- !, tangkap(Nama).
-handleGameCommand(lihatCommand)     :- !, lihatCommand.
-handleGameCommand(lihatKartu)       :- !, lihatKartu.
-handleGameCommand(cekInfo)          :- !, cekInfo.
-handleGameCommand(saveGame)         :- !, printSeparator, saveGame, printSeparator.
-handleGameCommand(loadGame)         :- !, printSeparator, loadGame, printSeparator.
-handleGameCommand(exit)             :- !, throw(game_over).
-handleGameCommand(_)                :- printUnknownCommand.
+handleGameCommand(tampilkanKartu)      :- !, tampilkanKartu.
+handleGameCommand(tangkap(Nama))       :- !, tangkap(Nama).
+handleGameCommand(lihatCommand)        :- !, lihatCommand.
+handleGameCommand(lihatKartu)          :- !, lihatKartu.
+handleGameCommand(cekInfo)             :- !, cekInfo.
+handleGameCommand(saveGame)            :- !, printSeparator, saveGame, printSeparator.
+handleGameCommand(loadGame)            :- !, printSeparator, loadGame, printSeparator.
+handleGameCommand(exit)                :- !, throw(game_over).
+handleGameCommand(_)                   :- printUnknownCommand.

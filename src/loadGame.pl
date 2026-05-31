@@ -13,18 +13,14 @@
 :- dynamic(giliranKe/1).
 :- dynamic(giliranAktifTemp/1).
 
-reverse_list(List, Reversed) :- reverse_helper(List, [], Reversed).
-reverse_helper([], Acc, Acc).
-reverse_helper([Head|Tail], Acc, Reversed) :- reverse_helper(Tail, [Head|Acc], Reversed).
-
-append_element([], Element, [Element]).
-append_element([Head|Tail], Element, [Head|NewTail]) :- append_element(Tail, Element, NewTail).
 
 gabungList([], L, L).
 gabungList([H|T], L2, [H|Hasil]) :- gabungList(T, L2, Hasil).
 
 rotasiKeDepan([X|T], X, [X|T]) :- !.
-rotasiKeDepan([H|T], X, Hasil) :- append_element(T, H, Rotasi), rotasiKeDepan(Rotasi, X, Hasil).
+rotasiKeDepan([H|T], X, Hasil) :-
+    append_element(T, H, Rotasi),
+    rotasiKeDepan(Rotasi, X, Hasil).
 
 adaDiList(X, [X|_]) :- !.
 adaDiList(X, [_|T]) :- adaDiList(X, T).
@@ -33,35 +29,8 @@ hapusSatu(_, [], []).
 hapusSatu(K, [K|T], T) :- !.
 hapusSatu(K, [H|T], [H|Hasil]) :- hapusSatu(K, T, Hasil).
 
-semuaWarna([merah, kuning, hijau, biru]).
-semuaJenis([0,1,2,3,4,5,6,7,8,9,skip,reverse,drawTwo]).
-
-buatDeckLengkap(Deck) :-
-    semuaWarna(Warna), semuaJenis(Jenis),
-    buatKartuBerwarna(Warna, Jenis, KartuBerwarna),
-    KartuHitam = [
-        kartu(hitam, wild),         kartu(hitam, wild),
-        kartu(hitam, wild),         kartu(hitam, wild),
-        kartu(hitam, wildDrawFour), kartu(hitam, wildDrawFour),
-        kartu(hitam, wildDrawFour), kartu(hitam, wildDrawFour),
-        kartu(hitam, mimic)
-    ],
-    gabungList(KartuBerwarna, KartuHitam, Deck).
-
-buatKartuBerwarna([], _, []).
-buatKartuBerwarna([W|RestW], Jenis, Hasil) :-
-    buatSatuWarna(W, Jenis, KartuW),
-    buatKartuBerwarna(RestW, Jenis, RestHasil),
-    gabungList(KartuW, RestHasil, Hasil).
-
-buatSatuWarna(_, [], []).
-buatSatuWarna(W, [J|RestJ], Hasil) :-
-    buatSatuWarna(W, RestJ, RestHasil),
-    (integer(J), J =:= 0 ->
-        gabungList([kartu(W,J)], RestHasil, Hasil)
-    ;
-        gabungList([kartu(W,J), kartu(W,J)], RestHasil, Hasil)
-    ).
+buatDeckLengkapLoad(Deck) :-
+    findall(kartu(W,J), kartu(W,J), Deck).
 
 kumpulkanTerpakai(ListPemain, Terpakai) :-
     kumpulkanTangan(ListPemain, KartuTangan),
@@ -82,12 +51,10 @@ buatSisaDeck([K|Rest], Terpakai, Hasil) :-
 buatSisaDeck([K|Rest], Terpakai, [K|Hasil]) :-
     buatSisaDeck(Rest, Terpakai, Hasil).
 
-% Pecah list codes pada semua kemunculan Sep
 pecahPada(_, [], [[]]).
 pecahPada(Sep, [Sep|T], [[]|Rest]) :- !, pecahPada(Sep, T, Rest).
 pecahPada(Sep, [H|T], [[H|Part]|Rest]) :- pecahPada(Sep, T, [Part|Rest]).
 
-% Pecah list codes pada kemunculan Sep pertama saja
 pecahPertama(_, [], [], []).
 pecahPertama(Sep, [Sep|T], [], T) :- !.
 pecahPertama(Sep, [H|T], [H|R1], R2) :- pecahPertama(Sep, T, R1, R2).
@@ -95,7 +62,6 @@ pecahPertama(Sep, [H|T], [H|R1], R2) :- pecahPertama(Sep, T, R1, R2).
 removeLastCode([_], []) :- !.
 removeLastCode([H|T], [H|R]) :- removeLastCode(T, R).
 
-% Hapus single quote di awal dan akhir codes jika ada
 stripOuterQuotes([39|Rest], Clean) :- removeLastCode(Rest, Clean), !.
 stripOuterQuotes(Codes, Codes).
 
@@ -114,12 +80,14 @@ mapCodesToKartu([Codes|T], [kartu(W,J)|KT]) :-
     splitDash(KartuAtom, W, J),
     mapCodesToKartu(T, KT).
 
+codesKeAngka(Codes, N) :-
+    catch(number_codes(N, Codes), _, fail).
+
 splitDash(Atom, W, J) :-
     atom_codes(Atom, Codes),
     pecahPertama(45, Codes, WCodes, JCodes),
     atom_codes(W, WCodes),
-    atom_codes(JAtom, JCodes),
-    (atom_number(JAtom, N) -> J = N ; J = JAtom).
+    (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)).
 
 parseListAtom(Atom, Hasil) :-
     atom_codes(Atom, [91|Rest]),
@@ -161,7 +129,8 @@ parse_baris_ascii(KarakterList) :-
     restore_fakta_ascii(Key, ValueAtom), !.
 
 split_key_value([58|Tail], [], Tail) :- !.
-split_key_value([Head|Tail], [Head|KeyTail], Value) :- split_key_value(Tail, KeyTail, Value).
+split_key_value([Head|Tail], [Head|KeyTail], Value) :-
+    split_key_value(Tail, KeyTail, Value).
 
 restore_fakta_ascii(arah_permainan, Value) :- !,
     retractall(arahPermainan(_)), assertz(arahPermainan(Value)).
@@ -190,8 +159,7 @@ restore_fakta_ascii(kartu_tersembunyi, Value) :- !,
     stripOuterQuotes(PCodes, CleanPCodes),
     atom_codes(P, CleanPCodes),
     atom_codes(W, WCodes),
-    atom_codes(JAtom, JCodes),
-    (atom_number(JAtom, N) -> J = N ; J = JAtom),
+    (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)),
     retractall(kartuTersembunyi(P, _)),
     assertz(kartuTersembunyi(P, kartu(W, J))).
 
@@ -199,14 +167,12 @@ restore_fakta_ascii(kartu_aksi_terakhir, Value) :- !,
     atom_codes(Value, Codes),
     pecahPada(45, Codes, [WCodes, JCodes, PCodes]),
     atom_codes(W, WCodes),
-    atom_codes(JAtom, JCodes),
-    (atom_number(JAtom, N) -> J = N ; J = JAtom),
+    (codesKeAngka(JCodes, N) -> J = N ; atom_codes(J, JCodes)),
     stripOuterQuotes(PCodes, CleanPCodes),
     atom_codes(Pemain, CleanPCodes),
     retractall(aksiTerakhir(_,_,_,_)),
     assertz(aksiTerakhir(W, J, Pemain, 0)).
 
-% Key format: kartu('NamaPemain'):
 restore_fakta_ascii(Key, Value) :-
     atom_codes(Key, KeyCodes),
     atom_codes('kartu(', PrefixCodes),
@@ -236,7 +202,7 @@ restoreStateTetap :-
 
 restoreTumpukan :-
     giliran(ListPemain),
-    buatDeckLengkap(DeckLengkap),
+    buatDeckLengkapLoad(DeckLengkap),
     kumpulkanTerpakai(ListPemain, Terpakai),
     buatSisaDeck(DeckLengkap, Terpakai, SisaDeck),
     retractall(tumpukan_kartu(_)),
